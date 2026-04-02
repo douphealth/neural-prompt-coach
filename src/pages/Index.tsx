@@ -113,7 +113,7 @@ export default function Index() {
               </span>
               <button
                 onClick={handleAnalyze}
-                disabled={!prompt.trim() || isAnalyzing || analysisCount >= FREE_DAILY_LIMIT}
+                disabled={!prompt.trim() || isAnalyzing || (!isPremium && analysisCount >= FREE_DAILY_LIMIT)}
                 className="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-display font-semibold flex items-center gap-2 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 {isAnalyzing ? (
