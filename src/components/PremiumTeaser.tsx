@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Lock, Zap, BookOpen, GitBranch, Infinity, History } from 'lucide-react';
+import { usePremium } from '@/hooks/usePremium';
 
 const premiumFeatures = [
   { icon: Zap, title: '5 Multi-Model Rewrites', desc: 'GPT-4o, Claude, Llama-optimized versions + Maximum Efficiency & Quality rewrites' },
