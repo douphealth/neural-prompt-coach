@@ -12,6 +12,7 @@ import BlueprintSection from '@/components/BlueprintSection';
 import TemplateLibrary from '@/components/TemplateLibrary';
 import PremiumTeaser from '@/components/PremiumTeaser';
 import ShareableScoreCard from '@/components/ShareableScoreCard';
+import { usePremium } from '@/hooks/usePremium';
 
 const FREE_DAILY_LIMIT = 3;
 
@@ -22,9 +23,10 @@ export default function Index() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { isPremium, isLoading: isPremiumLoading, handleUpgrade } = usePremium();
 
   const handleAnalyze = () => {
-    if (!prompt.trim() || analysisCount >= FREE_DAILY_LIMIT) return;
+    if (!prompt.trim() || (!isPremium && analysisCount >= FREE_DAILY_LIMIT)) return;
     setIsAnalyzing(true);
     // Simulate brief processing delay for UX
     setTimeout(() => {
@@ -53,12 +55,22 @@ export default function Index() {
             <span className="font-display font-bold text-foreground">PromptGrade<span className="text-primary">™</span></span>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-muted-foreground font-mono text-xs">
-              {FREE_DAILY_LIMIT - analysisCount} free analyses left
-            </span>
-            <button className="bg-primary text-primary-foreground px-4 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
-              Go Premium
-            </button>
+            {isPremium ? (
+              <span className="text-primary font-mono text-xs font-semibold">✦ Premium</span>
+            ) : (
+              <>
+                <span className="text-muted-foreground font-mono text-xs">
+                  {FREE_DAILY_LIMIT - analysisCount} free analyses left
+                </span>
+                <button
+                  onClick={handleUpgrade}
+                  disabled={isPremiumLoading}
+                  className="bg-primary text-primary-foreground px-4 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {isPremiumLoading ? 'Loading...' : 'Go Premium'}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -101,7 +113,7 @@ export default function Index() {
               </span>
               <button
                 onClick={handleAnalyze}
-                disabled={!prompt.trim() || isAnalyzing || analysisCount >= FREE_DAILY_LIMIT}
+                disabled={!prompt.trim() || isAnalyzing || (!isPremium && analysisCount >= FREE_DAILY_LIMIT)}
                 className="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-display font-semibold flex items-center gap-2 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 {isAnalyzing ? (
