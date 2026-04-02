@@ -12,6 +12,7 @@ import BlueprintSection from '@/components/BlueprintSection';
 import TemplateLibrary from '@/components/TemplateLibrary';
 import PremiumTeaser from '@/components/PremiumTeaser';
 import ShareableScoreCard from '@/components/ShareableScoreCard';
+import { usePremium } from '@/hooks/usePremium';
 
 const FREE_DAILY_LIMIT = 3;
 
