@@ -11,6 +11,7 @@ import ModelMatchIndicator from '@/components/ModelMatchIndicator';
 import BlueprintSection from '@/components/BlueprintSection';
 import TemplateLibrary from '@/components/TemplateLibrary';
 import PremiumTeaser from '@/components/PremiumTeaser';
+import ShareableScoreCard from '@/components/ShareableScoreCard';
 
 const FREE_DAILY_LIMIT = 3;
 
@@ -173,6 +174,11 @@ export default function Index() {
                 originalScore={result.overallScore}
                 rewriteScore={Math.min(result.overallScore + 35, 95)}
               />
+            </div>
+
+            {/* Shareable Score Card */}
+            <div className="bg-card border border-border rounded-xl p-6 mb-8">
+              <ShareableScoreCard result={result} />
             </div>
 
             {/* Model Match */}
