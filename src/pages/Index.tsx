@@ -26,7 +26,7 @@ export default function Index() {
   const { isPremium, isLoading: isPremiumLoading, handleUpgrade } = usePremium();
 
   const handleAnalyze = () => {
-    if (!prompt.trim() || analysisCount >= FREE_DAILY_LIMIT) return;
+    if (!prompt.trim() || (!isPremium && analysisCount >= FREE_DAILY_LIMIT)) return;
     setIsAnalyzing(true);
     // Simulate brief processing delay for UX
     setTimeout(() => {
