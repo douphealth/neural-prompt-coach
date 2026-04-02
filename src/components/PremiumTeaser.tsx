@@ -62,9 +62,11 @@ export default function PremiumTeaser() {
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.98 }}
-          className="bg-primary text-primary-foreground font-display font-bold text-lg px-10 py-4 rounded-xl glow-primary-strong hover:opacity-90 transition-opacity"
+          onClick={handleUpgrade}
+          disabled={isLoading}
+          className="bg-primary text-primary-foreground font-display font-bold text-lg px-10 py-4 rounded-xl glow-primary-strong hover:opacity-90 transition-opacity disabled:opacity-50"
         >
-          Unlock Premium — $7.99 Forever
+          {isLoading ? 'Loading...' : 'Unlock Premium — $7.99 Forever'}
         </motion.button>
         <p className="text-xs text-muted-foreground mt-3">One-time payment • No subscription • Instant access</p>
       </div>
