@@ -12,6 +12,10 @@ const premiumFeatures = [
 ];
 
 export default function PremiumTeaser() {
+  const { isPremium, isLoading, handleUpgrade } = usePremium();
+
+  if (isPremium) return null;
+
   return (
     <section className="py-20 relative overflow-hidden">
       {/* Glow background */}
