@@ -23,6 +23,7 @@ export default function Index() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { isPremium, isLoading: isPremiumLoading, handleUpgrade } = usePremium();
 
   const handleAnalyze = () => {
     if (!prompt.trim() || analysisCount >= FREE_DAILY_LIMIT) return;
