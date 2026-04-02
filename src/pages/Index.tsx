@@ -11,6 +11,7 @@ import ModelMatchIndicator from '@/components/ModelMatchIndicator';
 import BlueprintSection from '@/components/BlueprintSection';
 import TemplateLibrary from '@/components/TemplateLibrary';
 import PremiumTeaser from '@/components/PremiumTeaser';
+import ShareableScoreCard from '@/components/ShareableScoreCard';
 
 const FREE_DAILY_LIMIT = 3;
 
