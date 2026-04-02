@@ -176,6 +176,11 @@ export default function Index() {
               />
             </div>
 
+            {/* Shareable Score Card */}
+            <div className="bg-card border border-border rounded-xl p-6 mb-8">
+              <ShareableScoreCard result={result} />
+            </div>
+
             {/* Model Match */}
             <div className="bg-card border border-border rounded-xl p-6 mb-8">
               <ModelMatchIndicator matches={result.modelMatches} />
