@@ -55,12 +55,22 @@ export default function Index() {
             <span className="font-display font-bold text-foreground">PromptGrade<span className="text-primary">™</span></span>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-muted-foreground font-mono text-xs">
-              {FREE_DAILY_LIMIT - analysisCount} free analyses left
-            </span>
-            <button className="bg-primary text-primary-foreground px-4 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
-              Go Premium
-            </button>
+            {isPremium ? (
+              <span className="text-primary font-mono text-xs font-semibold">✦ Premium</span>
+            ) : (
+              <>
+                <span className="text-muted-foreground font-mono text-xs">
+                  {FREE_DAILY_LIMIT - analysisCount} free analyses left
+                </span>
+                <button
+                  onClick={handleUpgrade}
+                  disabled={isPremiumLoading}
+                  className="bg-primary text-primary-foreground px-4 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {isPremiumLoading ? 'Loading...' : 'Go Premium'}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </nav>
