@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, ArrowDown, History, Sparkles, GraduationCap, LayoutGrid, BarChart3, Lock, CheckCircle, HelpCircle } from 'lucide-react';
+import { Zap, ArrowDown, History, Sparkles, GraduationCap, LayoutGrid, BarChart3, Lock, CheckCircle, HelpCircle, Download, FileText } from 'lucide-react';
 import { analyzePrompt, type AnalysisResult } from '@/lib/promptAnalyzer';
 import ScoreGauge from '@/components/ScoreGauge';
 import RadarChart from '@/components/RadarChart';
@@ -17,6 +17,7 @@ import AnalyticsDashboard from '@/components/AnalyticsDashboard';
 import PromptChainsBuilder from '@/components/PromptChainsBuilder';
 import MasterclassSection from '@/components/MasterclassSection';
 import BlueprintTypingAssistant from '@/components/BlueprintTypingAssistant';
+import BlueprintCapture from '@/components/BlueprintCapture';
 import { usePremium } from '@/hooks/usePremium';
 import { toast } from '@/hooks/use-toast';
 
@@ -32,6 +33,7 @@ export default function Index() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
