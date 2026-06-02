@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, ArrowDown, History, Sparkles, GraduationCap, LayoutGrid, BarChart3, Lock, CheckCircle, HelpCircle } from 'lucide-react';
+import { Zap, ArrowDown, History, Sparkles, GraduationCap, LayoutGrid, BarChart3, Lock, CheckCircle, HelpCircle, Download, FileText } from 'lucide-react';
 import { analyzePrompt, type AnalysisResult } from '@/lib/promptAnalyzer';
 import ScoreGauge from '@/components/ScoreGauge';
 import RadarChart from '@/components/RadarChart';
@@ -17,6 +17,7 @@ import AnalyticsDashboard from '@/components/AnalyticsDashboard';
 import PromptChainsBuilder from '@/components/PromptChainsBuilder';
 import MasterclassSection from '@/components/MasterclassSection';
 import BlueprintTypingAssistant from '@/components/BlueprintTypingAssistant';
+import BlueprintCapture from '@/components/BlueprintCapture';
 import { usePremium } from '@/hooks/usePremium';
 import { toast } from '@/hooks/use-toast';
 
@@ -32,6 +33,7 @@ export default function Index() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -329,10 +331,20 @@ export default function Index() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="flex items-center justify-center gap-2 text-muted-foreground text-xs font-mono"
+                    className="flex flex-col items-center justify-center gap-4"
                   >
-                    <ArrowDown className="w-3.5 h-3.5 animate-bounce text-primary" />
-                    <span>Or load an optimized framework template below</span>
+                    <button
+                      onClick={() => setIsBlueprintOpen(true)}
+                      className="group inline-flex items-center gap-2.5 bg-secondary/40 hover:bg-secondary/70 border border-primary/30 hover:border-primary/60 text-foreground px-5 py-2.5 rounded-xl text-xs font-display font-bold transition-all shadow-sm hover:shadow-primary/20"
+                    >
+                      <FileText className="w-4 h-4 text-primary" />
+                      <span>Download the Free 18-page PromptGrade Blueprint</span>
+                      <span className="text-[9px] font-mono uppercase tracking-widest bg-primary/15 text-primary px-1.5 py-0.5 rounded">PDF</span>
+                    </button>
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs font-mono">
+                      <ArrowDown className="w-3.5 h-3.5 animate-bounce text-primary" />
+                      <span>Or load an optimized framework template below</span>
+                    </div>
                   </motion.div>
                 )}
               </section>
@@ -490,6 +502,9 @@ export default function Index() {
         onSelectHistory={handleSelectHistory}
         triggerRefresh={refreshTrigger}
       />
+
+      {/* Blueprint Email-Capture Modal (free lead magnet) */}
+      <BlueprintCapture open={isBlueprintOpen} onClose={() => setIsBlueprintOpen(false)} />
 
       {/* Footer */}
       <footer className="border-t border-border/60 py-10 mt-16 bg-secondary/10">
