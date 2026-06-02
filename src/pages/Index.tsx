@@ -503,6 +503,9 @@ export default function Index() {
         triggerRefresh={refreshTrigger}
       />
 
+      {/* Blueprint Email-Capture Modal (free lead magnet) */}
+      <BlueprintCapture open={isBlueprintOpen} onClose={() => setIsBlueprintOpen(false)} />
+
       {/* Footer */}
       <footer className="border-t border-border/60 py-10 mt-16 bg-secondary/10">
         <div className="container max-w-5xl px-4 text-center space-y-4">
