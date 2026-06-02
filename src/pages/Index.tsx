@@ -331,10 +331,20 @@ export default function Index() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="flex items-center justify-center gap-2 text-muted-foreground text-xs font-mono"
+                    className="flex flex-col items-center justify-center gap-4"
                   >
-                    <ArrowDown className="w-3.5 h-3.5 animate-bounce text-primary" />
-                    <span>Or load an optimized framework template below</span>
+                    <button
+                      onClick={() => setIsBlueprintOpen(true)}
+                      className="group inline-flex items-center gap-2.5 bg-secondary/40 hover:bg-secondary/70 border border-primary/30 hover:border-primary/60 text-foreground px-5 py-2.5 rounded-xl text-xs font-display font-bold transition-all shadow-sm hover:shadow-primary/20"
+                    >
+                      <FileText className="w-4 h-4 text-primary" />
+                      <span>Download the Free 18-page PromptGrade Blueprint</span>
+                      <span className="text-[9px] font-mono uppercase tracking-widest bg-primary/15 text-primary px-1.5 py-0.5 rounded">PDF</span>
+                    </button>
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs font-mono">
+                      <ArrowDown className="w-3.5 h-3.5 animate-bounce text-primary" />
+                      <span>Or load an optimized framework template below</span>
+                    </div>
                   </motion.div>
                 )}
               </section>
