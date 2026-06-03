@@ -2,9 +2,7 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3.23.8'
 
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/brevo'
-const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-const BREVO_CONNECTION_KEY = Deno.env.get('BREVO_API_KEY')
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
@@ -13,7 +11,7 @@ const BodySchema = z.object({
   source: z.string().trim().max(64).optional().default('blueprint_download'),
 })
 
-const APP_URL = 'https://promptgrade.app'
+const APP_URL = 'https://promptgrade.efficientgptprompts.com'
 const BLUEPRINT_URL = `${APP_URL}/promptgrade-blueprint.pdf`
 
 function buildHtml(email: string) {
@@ -73,8 +71,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY missing')
-    if (!BREVO_CONNECTION_KEY) throw new Error('BREVO_API_KEY missing')
+    if (!BREVO_API_KEY) throw new Error('BREVO_API_KEY missing')
 
     const parsed = BodySchema.safeParse(await req.json())
     if (!parsed.success) {
@@ -93,12 +90,11 @@ Deno.serve(async (req) => {
     )
 
     // Send via Brevo
-    const brevoRes = await fetch(`${GATEWAY_URL}/smtp/email`, {
+    const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'X-Connection-Api-Key': BREVO_CONNECTION_KEY,
+        'api-key': BREVO_API_KEY,
       },
       body: JSON.stringify({
         sender: { name: 'PromptGrade', email: 'blueprint@promptgrade.app' },
