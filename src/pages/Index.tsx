@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, ArrowDown, History, Sparkles, GraduationCap, LayoutGrid, BarChart3, Lock, CheckCircle, HelpCircle, Download, FileText } from 'lucide-react';
+import { ArrowDown, History, Sparkles, GraduationCap, LayoutGrid, BarChart3, Lock, CheckCircle, HelpCircle, Download, FileText } from 'lucide-react';
 import { analyzePrompt, type AnalysisResult } from '@/lib/promptAnalyzer';
 import ScoreGauge from '@/components/ScoreGauge';
 import RadarChart from '@/components/RadarChart';
@@ -166,7 +166,7 @@ export default function Index() {
       <nav className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="container max-w-6xl flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-primary fill-current" />
+            <img src="/logo.png" alt="EfficientGPTPrompts logo" className="w-8 h-8 rounded-lg object-contain bg-white/95 shadow-sm" />
             <span className="font-display font-bold text-foreground tracking-wide">
               PromptGrade<span className="text-primary font-bold">™</span>
             </span>
