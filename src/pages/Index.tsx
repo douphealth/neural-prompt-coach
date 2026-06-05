@@ -17,6 +17,7 @@ import AnalyticsDashboard from '@/components/AnalyticsDashboard';
 import PromptChainsBuilder from '@/components/PromptChainsBuilder';
 import MasterclassSection from '@/components/MasterclassSection';
 import BlueprintTypingAssistant from '@/components/BlueprintTypingAssistant';
+import EmailReportSection from '@/components/EmailReportSection';
 import { usePremium } from '@/hooks/usePremium';
 import { toast } from '@/hooks/use-toast';
 
@@ -381,6 +382,9 @@ export default function Index() {
                         modelRewrites={result.modelRewrites}
                       />
                     </div>
+
+                    {/* Email Report Dispatch Form */}
+                    <EmailReportSection prompt={prompt} result={result} />
 
                     {/* Share score */}
                     <div className="glass-card rounded-2xl p-6 shadow-sm">
