@@ -17,7 +17,7 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    const origin = req.headers.get("origin") || "https://neural-prompt-coach.lovable.app";
+    const origin = req.headers.get("origin") || "https://promptgrade.efficientgptprompts.com";
 
     // Guest checkout - no auth required
     const session = await stripe.checkout.sessions.create({
