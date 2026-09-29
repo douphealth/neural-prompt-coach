@@ -112,7 +112,7 @@ To achieve maximum results immediately, follow these specific steps:
     let optIdx = 0;
 
     // Stream original (slower, generic, shorter)
-    originalInterval = setInterval(() => {
+    const originalInterval = setInterval(() => {
       if (origIdx < origWords.length) {
         setOriginalStream(prev => prev + (origIdx === 0 ? '' : ' ') + origWords[origIdx]);
         origIdx++;
@@ -126,7 +126,7 @@ To achieve maximum results immediately, follow these specific steps:
     }, 45);
 
     // Stream optimized (faster, highly structured, longer)
-    optimizedInterval = setInterval(() => {
+    const optimizedInterval = setInterval(() => {
       if (optIdx < optWords.length) {
         setOptimizedStream(prev => prev + (optIdx === 0 ? '' : ' ') + optWords[optIdx]);
         optIdx++;
@@ -143,7 +143,7 @@ To achieve maximum results immediately, follow these specific steps:
       clearInterval(originalInterval);
       clearInterval(optimizedInterval);
     };
-  }, [isPlaying]);
+  }, [isPlaying, originalOutputText, optimizedOutputText]);
 
   const triggerSimulation = () => {
     setIsPlaying(true);
