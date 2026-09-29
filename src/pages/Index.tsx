@@ -146,9 +146,9 @@ export default function Index() {
             disabled={isPremiumLoading}
             className="bg-primary text-primary-foreground font-display font-bold text-sm px-8 py-3.5 rounded-xl glow-primary-strong hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {isPremiumLoading ? 'Connecting...' : 'Unlock Premium Access — $7.99'}
+            {isPremiumLoading ? 'Connecting...' : 'Unlock Premium — Secure Checkout'}
           </button>
-          <p className="text-[10px] text-muted-foreground/75 mt-3">Lifetime Access • Safe Checkout • Multi-Model Capabilities Unlocked</p>
+          <p className="text-[10px] text-muted-foreground/75 mt-3">Lifetime Access • Stripe Checkout • Premium Tools Unlocked</p>
         </motion.div>
       </div>
     );
