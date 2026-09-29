@@ -52,10 +52,10 @@ serve(async (req) => {
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
-      console.warn("RESEND_API_KEY is not defined. Simulating successful email sequence dispatch in sandbox.");
-      return new Response(JSON.stringify({ success: true, message: "Sandbox Mode: Email sequence triggered successfully!" }), {
+      console.error("RESEND_API_KEY is not configured.");
+      return new Response(JSON.stringify({ error: "Email service is not configured." }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: 503,
       });
     }
 
@@ -91,7 +91,7 @@ serve(async (req) => {
               </div>
 
               <div class="stats-grid">
-                ${result.dimensions.map((d: any) => `
+                ${result.dimensions.map((d: { emoji: string; label: string; score: number }) => `
                   <div class="stat-row">
                     <div class="stat-label">${d.emoji} ${d.label}</div>
                     <div class="stat-val">${d.score}/100</div>
@@ -218,7 +218,7 @@ serve(async (req) => {
 
     // Dispatch requests to Resend using Deno fetch
     const sendEmail = async (subject: string, html: string, scheduledAt?: string) => {
-      const payload: any = {
+      const payload: { from: string; to: string[]; subject: string; html: string; scheduled_at?: string } = {
         from: "PromptGrade™ <coach@promptgrade.efficientgptprompts.com>",
         to: [email],
         subject: subject,
