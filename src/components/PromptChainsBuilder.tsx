@@ -250,8 +250,8 @@ export default function PromptChainsBuilder() {
     setActiveRunningStep(null);
     setIsRunning(false);
     toast({
-      title: 'Pipeline Run Complete',
-      description: 'Simulated prompt chain executed successfully!'
+      title: 'Pipeline Preview Complete',
+      description: 'Illustrative local preview rendered successfully.'
     });
   };
 
@@ -355,7 +355,7 @@ export default function PromptChainsBuilder() {
                 className="flex-1 bg-primary text-primary-foreground font-display font-bold text-xs py-2.5 rounded-lg flex items-center justify-center gap-1.5 hover:opacity-90 disabled:opacity-40 transition-all shadow-sm"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
-                Run Pipeline Chain
+                Preview Pipeline
               </button>
               <button
                 onClick={handleCopyBundle}
@@ -495,7 +495,7 @@ export default function PromptChainsBuilder() {
                             >
                               <Plus className="w-5 h-5" />
                             </motion.div>
-                            Simulating execution...
+                            Rendering preview...
                           </div>
                         )}
 
@@ -503,7 +503,7 @@ export default function PromptChainsBuilder() {
                           {stepOutput ? (
                             <span className="text-white/90">{stepOutput}</span>
                           ) : (
-                            <span className="text-muted-foreground/30 italic">Awaiting pipeline run simulation...</span>
+                            <span className="text-muted-foreground/30 italic">Awaiting pipeline preview...</span>
                           )}
                         </div>
 
