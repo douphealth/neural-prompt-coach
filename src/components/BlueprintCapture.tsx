@@ -27,7 +27,7 @@ export default function BlueprintCapture({ open, onClose }: Props) {
       });
       if (error) throw error;
       setStatus('done');
-      try { localStorage.setItem('promptgrade_blueprint_email', email.trim()); } catch {}
+      try { localStorage.setItem('promptgrade_blueprint_email', email.trim()); } catch { /* Storage may be unavailable in privacy mode. */ }
       // Trigger PDF download immediately
       const a = document.createElement('a');
       a.href = BLUEPRINT_URL;
@@ -42,11 +42,11 @@ export default function BlueprintCapture({ open, onClose }: Props) {
           ? 'Your PDF is downloading. Email is queued and will arrive shortly.'
           : 'PDF downloading now — we also sent a copy to your inbox.',
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus('idle');
       toast({
         title: 'Something went wrong',
-        description: err?.message ?? 'Please try again in a moment.',
+        description: err instanceof Error ? err.message : 'Please try again in a moment.',
         variant: 'destructive',
       });
     }
