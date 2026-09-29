@@ -93,9 +93,6 @@ To achieve maximum results immediately, follow these specific steps:
   useEffect(() => {
     if (!isPlaying) return;
 
-    let originalInterval: NodeJS.Timeout;
-    let optimizedInterval: NodeJS.Timeout;
-
     setOriginalStream('');
     setOptimizedStream('');
     setCurrentExecuting('both');
@@ -107,7 +104,7 @@ To achieve maximum results immediately, follow these specific steps:
     let optIdx = 0;
 
     // Stream original (slower, generic, shorter)
-    originalInterval = setInterval(() => {
+    const originalInterval = setInterval(() => {
       if (origIdx < origWords.length) {
         setOriginalStream(prev => prev + (origIdx === 0 ? '' : ' ') + origWords[origIdx]);
         origIdx++;
@@ -121,7 +118,7 @@ To achieve maximum results immediately, follow these specific steps:
     }, 45);
 
     // Stream optimized (faster, highly structured, longer)
-    optimizedInterval = setInterval(() => {
+    const optimizedInterval = setInterval(() => {
       if (optIdx < optWords.length) {
         setOptimizedStream(prev => prev + (optIdx === 0 ? '' : ' ') + optWords[optIdx]);
         optIdx++;
@@ -162,7 +159,7 @@ To achieve maximum results immediately, follow these specific steps:
           {rewritesList.map((r) => (
             <button
               key={r.model}
-              onClick={() => setActiveModel(r.model as any)}
+              onClick={() => setActiveModel(r.model as 'gpt-4o' | 'claude' | 'gemini' | 'llama')}
               className={`px-3 py-1.5 rounded-md transition-all font-semibold ${
                 activeModel === r.model
                   ? 'bg-primary text-primary-foreground font-bold shadow-sm'
