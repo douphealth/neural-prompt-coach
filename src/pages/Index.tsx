@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ElementType } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, ArrowDown, History, Sparkles, GraduationCap, LayoutGrid, BarChart3, Lock, CheckCircle, HelpCircle, Download, FileText } from 'lucide-react';
 import { analyzePrompt, type AnalysisResult } from '@/lib/promptAnalyzer';
@@ -38,14 +38,23 @@ export default function Index() {
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const { isPremium, isLoading: isPremiumLoading, handleUpgrade, handleDowngrade } = usePremium();
+  const { isPremium, isLoading: isPremiumLoading, handleUpgrade } = usePremium();
 
-  // Reset page layout on load if needed
   useEffect(() => {
-    // Read count from local storage
-    const count = localStorage.getItem('promptgrade_count');
-    if (count) {
-      setAnalysisCount(Number(count));
+    const today = new Date().toLocaleDateString('en-CA');
+    const raw = localStorage.getItem('promptgrade_daily_usage');
+
+    try {
+      const usage = raw ? JSON.parse(raw) : null;
+      if (usage?.date === today && Number.isFinite(usage?.count)) {
+        setAnalysisCount(usage.count);
+      } else {
+        localStorage.setItem('promptgrade_daily_usage', JSON.stringify({ date: today, count: 0 }));
+        setAnalysisCount(0);
+      }
+    } catch {
+      localStorage.setItem('promptgrade_daily_usage', JSON.stringify({ date: today, count: 0 }));
+      setAnalysisCount(0);
     }
   }, []);
 
@@ -70,7 +79,10 @@ export default function Index() {
       
       const newCount = analysisCount + 1;
       setAnalysisCount(newCount);
-      localStorage.setItem('promptgrade_count', String(newCount));
+      localStorage.setItem(
+        'promptgrade_daily_usage',
+        JSON.stringify({ date: new Date().toLocaleDateString('en-CA'), count: newCount }),
+      );
 
       // Append to localStorage prompt scan history
       try {
@@ -120,7 +132,7 @@ export default function Index() {
   };
 
   // Rendering standardLockedScreen for non-premium tabs
-  const renderLockedScreen = (title: string, desc: string, icon: any) => {
+  const renderLockedScreen = (title: string, desc: string, icon: ElementType) => {
     const IconComp = icon;
     return (
       <div className="py-16 flex items-center justify-center">
@@ -191,14 +203,7 @@ export default function Index() {
                 <span className="text-primary font-mono text-xs font-semibold bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
                   ✦ Premium Workspace
                 </span>
-                {/* Reset Option in sandbox for review */}
-                <button
-                  onClick={handleDowngrade}
-                  className="text-[10px] text-muted-foreground/60 hover:text-destructive transition-colors font-mono underline"
-                  title="Sandbox reset for test"
-                >
-                  Reset Free
-                </button>
+
               </div>
             ) : (
               <div className="flex items-center gap-3">
