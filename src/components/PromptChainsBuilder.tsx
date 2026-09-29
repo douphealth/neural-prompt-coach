@@ -143,7 +143,7 @@ const DEFAULT_STEPS: ChainStep[] = [
 
 export default function PromptChainsBuilder() {
   const [steps, setSteps] = useState<ChainStep[]>(DEFAULT_STEPS);
-  const [variables, setVariables] = useState({
+  const [variables, setVariables] = useState<Record<string, string>>({
     topic: 'Automating Customer Support with AI Agents',
     audience: 'B2B Customer Support Directors'
   });
@@ -262,7 +262,7 @@ export default function PromptChainsBuilder() {
     
     bundleText += `## Core Variables:\n`;
     Object.entries(variables).forEach(([k, v]) => {
-      bundleText += `- **\$\{${k}\}**: ${v}\n`;
+      bundleText += '- **${' + k + '}**: ' + v + '\n';
     });
     bundleText += `\n---\n\n`;
 
@@ -333,7 +333,7 @@ export default function PromptChainsBuilder() {
                   </label>
                   <input
                     type="text"
-                    value={(variables as any)[varName] || ''}
+                    value={variables[varName] || ''}
                     onChange={(e) => handleVarChange(varName, e.target.value)}
                     placeholder={`Enter value for ${varName}`}
                     className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary/50 font-sans"

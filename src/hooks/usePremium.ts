@@ -1,49 +1,92 @@
-import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+const SESSION_KEY = "promptgrade_session_id";
 
 export function usePremium() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPremium, setIsPremium] = useState(localStorage.getItem('promptgrade_premium') === 'true');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
+
+  const verifySession = useCallback(async (sessionId: string) => {
+    const { data, error } = await supabase.functions.invoke("verify-payment", {
+      body: { session_id: sessionId },
+    });
+
+    if (error || data?.premium !== true) {
+      localStorage.removeItem(SESSION_KEY);
+      setIsPremium(false);
+      return false;
+    }
+
+    localStorage.setItem(SESSION_KEY, sessionId);
+    setIsPremium(true);
+    return true;
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const restore = async () => {
+      const sessionId = localStorage.getItem(SESSION_KEY);
+      if (!sessionId) {
+        if (active) setIsLoading(false);
+        return;
+      }
+
+      try {
+        await verifySession(sessionId);
+      } catch {
+        if (active) {
+          localStorage.removeItem(SESSION_KEY);
+          setIsPremium(false);
+        }
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    restore();
+
+    return () => {
+      active = false;
+    };
+  }, [verifySession]);
 
   const handleUpgrade = useCallback(async () => {
     setIsLoading(true);
+
     try {
-      // Try supabase function first
-      const { data, error } = await supabase.functions.invoke('create-payment');
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (err: any) {
-      // Friendly Sandbox Override for local review and offline testing
-      console.warn('Supabase edge function create-payment not detected or offline. Activating Sandbox Payment Success flow.');
-      
-      toast({
-        title: 'Initializing Sandbox Checkout',
-        description: 'Bypassing payment gateway... Unlocking premium workspace!',
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        body: {},
       });
-      
-      // Delay for premium experience animation
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      
-      localStorage.setItem('promptgrade_premium', 'true');
-      setIsPremium(true);
-      window.location.search = '?session_id=sandbox_mock_ref';
-    } finally {
+
+      if (error) throw error;
+      if (!data?.url || typeof data.url !== "string") {
+        throw new Error("Secure checkout URL was not returned.");
+      }
+
+      window.location.assign(data.url);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Secure checkout is temporarily unavailable. Please try again.";
+
+      toast({
+        title: "Checkout unavailable",
+        description: message,
+        variant: "destructive",
+      });
+
       setIsLoading(false);
     }
   }, []);
 
-  const handleDowngrade = useCallback(() => {
-    localStorage.removeItem('promptgrade_premium');
-    localStorage.removeItem('promptgrade_session_id');
-    setIsPremium(false);
-    toast({
-      title: 'Premium Reset',
-      description: 'Workspace returned to free tier limits.',
-    });
-  }, []);
-
-  return { isPremium, isLoading, handleUpgrade, handleDowngrade };
+  return {
+    isPremium,
+    isLoading,
+    handleUpgrade,
+    verifySession,
+  };
 }

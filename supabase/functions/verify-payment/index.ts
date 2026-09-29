@@ -54,59 +54,60 @@ serve(async (req) => {
       throw new Error("STRIPE_SECRET_KEY is not configured");
     }
 
-    const premiumPriceId =
-      Deno.env.get("STRIPE_PREMIUM_PRICE_ID") || DEFAULT_PREMIUM_PRICE_ID;
+    const body = await req.json().catch(() => ({}));
+    const sessionId = typeof body?.session_id === "string" ? body.session_id.trim() : "";
+
+    if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId)) {
+      return new Response(JSON.stringify({ premium: false, error: "Invalid session" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2025-08-27.basil",
     });
 
-    const appOrigin = getAppOrigin();
+    const expectedPriceId =
+      Deno.env.get("STRIPE_PREMIUM_PRICE_ID") || DEFAULT_PREMIUM_PRICE_ID;
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [
-        {
-          price: premiumPriceId,
-          quantity: 1,
-        },
-      ],
-      customer_creation: "always",
-      success_url: `${appOrigin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appOrigin}/?checkout=canceled`,
-      metadata: {
-        product: "promptgrade_lifetime_premium",
-        price_id: premiumPriceId,
-      },
-      payment_intent_data: {
-        metadata: {
-          product: "promptgrade_lifetime_premium",
-          price_id: premiumPriceId,
-        },
-      },
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["line_items.data.price"],
     });
 
-    if (!session.url) {
-      throw new Error("Stripe did not return a Checkout URL");
-    }
+    const purchasedExpectedPrice = Boolean(
+      session.line_items?.data?.some((item) => item.price?.id === expectedPriceId),
+    );
+
+    const premium =
+      session.mode === "payment" &&
+      session.status === "complete" &&
+      session.payment_status === "paid" &&
+      session.metadata?.product === "promptgrade_lifetime_premium" &&
+      session.metadata?.price_id === expectedPriceId &&
+      purchasedExpectedPrice;
 
     return new Response(
-      JSON.stringify({ id: session.id, url: session.url }),
+      JSON.stringify({
+        premium,
+        payment_status: session.payment_status,
+        customer_email: premium ? session.customer_details?.email ?? null : null,
+      }),
       {
-        status: 200,
+        status: premium ? 200 : 402,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
     );
   } catch (error) {
     console.error(
-      "create-payment failed",
+      "verify-payment failed",
       error instanceof Error ? error.message : String(error),
     );
 
     return new Response(
-      JSON.stringify({ error: "Unable to start secure checkout. Please try again." }),
+      JSON.stringify({ premium: false, error: "Payment could not be verified." }),
       {
-        status: 500,
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
     );

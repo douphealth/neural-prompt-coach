@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, ArrowDown, History, Sparkles, GraduationCap, LayoutGrid, BarChart3, Lock, CheckCircle, HelpCircle, Download, FileText } from 'lucide-react';
+import { Zap, ArrowDown, History, Sparkles, GraduationCap, LayoutGrid, BarChart3, Lock, CheckCircle, HelpCircle, Download, FileText, type LucideIcon } from 'lucide-react';
 import { analyzePrompt, type AnalysisResult } from '@/lib/promptAnalyzer';
 import ScoreGauge from '@/components/ScoreGauge';
 import RadarChart from '@/components/RadarChart';
@@ -21,6 +21,7 @@ import EmailReportSection from '@/components/EmailReportSection';
 import BlueprintCapture from '@/components/BlueprintCapture';
 import { usePremium } from '@/hooks/usePremium';
 import { toast } from '@/hooks/use-toast';
+import { readDailyUsage, writeDailyUsage } from '@/lib/freeQuota';
 
 const FREE_DAILY_LIMIT = 5;
 
@@ -38,15 +39,10 @@ export default function Index() {
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const { isPremium, isLoading: isPremiumLoading, handleUpgrade, handleDowngrade } = usePremium();
+  const { isPremium, isLoading: isPremiumLoading, handleUpgrade } = usePremium();
 
-  // Reset page layout on load if needed
   useEffect(() => {
-    // Read count from local storage
-    const count = localStorage.getItem('promptgrade_count');
-    if (count) {
-      setAnalysisCount(Number(count));
-    }
+    setAnalysisCount(readDailyUsage(localStorage).count);
   }, []);
 
   const handleAnalyze = () => {
@@ -68,9 +64,11 @@ export default function Index() {
       const analysis = analyzePrompt(trimmed);
       setResult(analysis);
       
-      const newCount = analysisCount + 1;
-      setAnalysisCount(newCount);
-      localStorage.setItem('promptgrade_count', String(newCount));
+      if (!isPremium) {
+        const newCount = analysisCount + 1;
+        setAnalysisCount(newCount);
+        writeDailyUsage(localStorage, newCount);
+      }
 
       // Append to localStorage prompt scan history
       try {
@@ -120,7 +118,7 @@ export default function Index() {
   };
 
   // Rendering standardLockedScreen for non-premium tabs
-  const renderLockedScreen = (title: string, desc: string, icon: any) => {
+  const renderLockedScreen = (title: string, desc: string, icon: LucideIcon) => {
     const IconComp = icon;
     return (
       <div className="py-16 flex items-center justify-center">
@@ -148,9 +146,9 @@ export default function Index() {
             disabled={isPremiumLoading}
             className="bg-primary text-primary-foreground font-display font-bold text-sm px-8 py-3.5 rounded-xl glow-primary-strong hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {isPremiumLoading ? 'Connecting...' : 'Unlock Premium Access — $7.99'}
+            {isPremiumLoading ? 'Connecting...' : 'Unlock Premium — Secure Checkout'}
           </button>
-          <p className="text-[10px] text-muted-foreground/75 mt-3">Lifetime Access • Safe Checkout • Multi-Model Capabilities Unlocked</p>
+          <p className="text-[10px] text-muted-foreground/75 mt-3">Lifetime Access • Stripe Checkout • Premium Tools Unlocked</p>
         </motion.div>
       </div>
     );
@@ -191,14 +189,7 @@ export default function Index() {
                 <span className="text-primary font-mono text-xs font-semibold bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
                   ✦ Premium Workspace
                 </span>
-                {/* Reset Option in sandbox for review */}
-                <button
-                  onClick={handleDowngrade}
-                  className="text-[10px] text-muted-foreground/60 hover:text-destructive transition-colors font-mono underline"
-                  title="Sandbox reset for test"
-                >
-                  Reset Free
-                </button>
+
               </div>
             ) : (
               <div className="flex items-center gap-3">
@@ -392,6 +383,7 @@ export default function Index() {
                         originalScore={result.overallScore}
                         rewriteScore={Math.min(result.overallScore + 32, 96)}
                         modelRewrites={result.modelRewrites}
+                        isPremium={isPremium}
                       />
                     </div>
 
