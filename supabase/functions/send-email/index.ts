@@ -52,11 +52,7 @@ serve(async (req) => {
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
-      console.warn("RESEND_API_KEY is not defined. Simulating successful email sequence dispatch in sandbox.");
-      return new Response(JSON.stringify({ success: true, message: "Sandbox Mode: Email sequence triggered successfully!" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      throw new Error("Email service is not configured.");
     }
 
     // Helper to extract a topic
