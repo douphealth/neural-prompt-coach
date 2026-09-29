@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Lock, Zap, BookOpen, GitBranch, Infinity, History } from 'lucide-react';
+import { Lock, Zap, BookOpen, GitBranch, Infinity as InfinityIcon, History } from 'lucide-react';
 import { usePremium } from '@/hooks/usePremium';
 
 const premiumFeatures = [
@@ -7,7 +7,7 @@ const premiumFeatures = [
   { icon: BookOpen, title: '200+ Premium Templates', desc: 'Full vault across 20+ professional categories, all rated 90+ PES™' },
   { icon: BookOpen, title: 'Prompt Engineering Masterclass', desc: '12 prompt patterns, model-specific secrets, and real-world case studies' },
   { icon: GitBranch, title: 'Prompt Chains Builder', desc: 'Build multi-step prompt workflows for complex tasks' },
-  { icon: Infinity, title: 'Unlimited Analyses', desc: 'No daily cap. Analyze as many prompts as you want, forever.' },
+  { icon: InfinityIcon, title: 'Unlimited Analyses', desc: 'No daily cap. Analyze as many prompts as you want, forever.' },
   { icon: History, title: 'Export & History', desc: 'Save, compare, and export all your analyses. Track your improvement.' },
 ];
 
