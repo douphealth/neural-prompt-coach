@@ -62,11 +62,11 @@ export function usePremium() {
       if (!data?.url) throw new Error('Checkout did not return a redirect URL.');
 
       window.location.assign(data.url);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Checkout initialization failed', error);
       toast({
         title: 'Checkout unavailable',
-        description: error?.message || 'We could not start Stripe Checkout. Please try again.',
+        description: error instanceof Error ? error.message : 'We could not start Stripe Checkout. Please try again.',
         variant: 'destructive',
       });
       setIsLoading(false);
