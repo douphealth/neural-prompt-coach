@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ElementType } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, ArrowDown, History, Sparkles, GraduationCap, LayoutGrid, BarChart3, Lock, CheckCircle, HelpCircle, Download, FileText } from 'lucide-react';
 import { analyzePrompt, type AnalysisResult } from '@/lib/promptAnalyzer';
@@ -132,7 +132,7 @@ export default function Index() {
   };
 
   // Rendering standardLockedScreen for non-premium tabs
-  const renderLockedScreen = (title: string, desc: string, icon: any) => {
+  const renderLockedScreen = (title: string, desc: string, icon: ElementType) => {
     const IconComp = icon;
     return (
       <div className="py-16 flex items-center justify-center">
