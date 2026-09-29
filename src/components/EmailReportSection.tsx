@@ -36,11 +36,11 @@ export default function EmailReportSection({ prompt, result }: EmailReportSectio
         title: 'Report Dispatched! 📧',
         description: 'Check your inbox for your detailed prompt audit and masterclass registration.',
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Email trigger failed:', err);
       toast({
         title: 'Email could not be sent',
-        description: err?.message || 'Please try again in a moment.',
+        description: err instanceof Error ? err.message : 'Please try again in a moment.',
         variant: 'destructive',
       });
       setIsSuccess(false);
