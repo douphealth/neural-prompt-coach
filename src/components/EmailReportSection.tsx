@@ -38,13 +38,12 @@ export default function EmailReportSection({ prompt, result }: EmailReportSectio
       });
     } catch (err: any) {
       console.error('Email trigger failed:', err);
-      // Sandbox fallback logging just in case, but let the user know we handled it
       toast({
-        title: 'Dispatch Triggered',
-        description: err.message || 'Auditing report generated successfully.',
+        title: 'Email could not be sent',
+        description: err?.message || 'Please try again in a moment.',
+        variant: 'destructive',
       });
-      // In local sandbox environments without Supabase edge functions, we'll still show success
-      setIsSuccess(true);
+      setIsSuccess(false);
     } finally {
       setIsLoading(false);
     }
