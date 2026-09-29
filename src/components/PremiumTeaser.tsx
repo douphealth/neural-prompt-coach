@@ -3,8 +3,8 @@ import { Lock, Zap, BookOpen, GitBranch, Infinity, History } from 'lucide-react'
 import { usePremium } from '@/hooks/usePremium';
 
 const premiumFeatures = [
-  { icon: Zap, title: '5 Multi-Model Rewrites', desc: 'GPT-4o, Claude, Llama-optimized versions + Maximum Efficiency & Quality rewrites' },
-  { icon: BookOpen, title: '200+ Premium Templates', desc: 'Full vault across 20+ professional categories, all rated 90+ PES™' },
+  { icon: Zap, title: '4 Model-Specific Rewrites', desc: 'Prompt variants tailored to GPT, Claude, Gemini, and Llama-style instruction patterns.' },
+  { icon: BookOpen, title: 'Advanced Prompt Workbench', desc: 'Premium prompt chains, masterclass material, analytics, and model-specific rewrite views.' },
   { icon: BookOpen, title: 'Prompt Engineering Masterclass', desc: '12 prompt patterns, model-specific secrets, and real-world case studies' },
   { icon: GitBranch, title: 'Prompt Chains Builder', desc: 'Build multi-step prompt workflows for complex tasks' },
   { icon: Infinity, title: 'Unlimited Analyses', desc: 'No daily cap. Analyze as many prompts as you want, forever.' },
@@ -35,8 +35,8 @@ export default function PremiumTeaser() {
           Unlock the Full Power of PromptGrade™
         </h2>
         <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-          Advanced multi-model rewrites, the complete 200+ template vault, the masterclass playbook, and unlimited analyses.
-          <span className="text-primary font-bold"> One payment. Yours forever.</span>
+          Advanced model-specific rewrites, prompt chains, the masterclass playbook, workspace analytics, and unlimited analyses.
+          <span className="text-primary font-bold"> One lifetime purchase.</span>
         </p>
       </motion.div>
 
@@ -66,7 +66,7 @@ export default function PremiumTeaser() {
           disabled={isLoading}
           className="bg-primary text-primary-foreground font-display font-bold text-lg px-10 py-4 rounded-xl glow-primary-strong hover:opacity-90 transition-opacity disabled:opacity-50"
         >
-          {isLoading ? 'Loading...' : 'Unlock Premium — $7.99 Forever'}
+          {isLoading ? 'Loading...' : 'Unlock Premium — Secure Checkout Forever'}
         </motion.button>
         <p className="text-xs text-muted-foreground mt-3">One-time payment • No subscription • Instant access</p>
       </div>
