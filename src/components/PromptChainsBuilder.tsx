@@ -262,7 +262,7 @@ export default function PromptChainsBuilder() {
     
     bundleText += `## Core Variables:\n`;
     Object.entries(variables).forEach(([k, v]) => {
-      bundleText += `- **\$\{${k}\}**: ${v}\n`;
+      bundleText += '- **${' + k + '}**: ' + v + '\n';
     });
     bundleText += `\n---\n\n`;
 
