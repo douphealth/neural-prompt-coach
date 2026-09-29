@@ -98,9 +98,6 @@ To achieve maximum results immediately, follow these specific steps:
   useEffect(() => {
     if (!isPlaying) return;
 
-    let originalInterval: NodeJS.Timeout;
-    let optimizedInterval: NodeJS.Timeout;
-
     setOriginalStream('');
     setOptimizedStream('');
     setCurrentExecuting('both');
