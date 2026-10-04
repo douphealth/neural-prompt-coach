@@ -29,10 +29,10 @@ export default function PromptRewrite({
 
   // Fallback if no modelRewrites provided
   const rewritesList = modelRewrites.length > 0 ? modelRewrites : [
-    { model: 'gpt-4o', name: 'GPT-4o Optimizer', focus: 'General multi-purpose structuring.', rewrite },
-    { model: 'claude', name: 'Claude Optimizer', focus: 'XML tags & deep instructions.', rewrite },
-    { model: 'gemini', name: 'Gemini Optimizer', focus: 'Interactive multi-modal format.', rewrite },
-    { model: 'llama', name: 'Llama Optimizer', focus: 'Dense instructions & strict constraints.', rewrite },
+    { model: 'gpt-4o', name: 'OpenAI Optimizer', focus: 'Explicit criteria, verification, concise rationale, and robust structure.', rewrite },
+    { model: 'claude', name: 'Claude Optimizer', focus: 'Clear context boundaries, structured instructions, and explicit constraints.', rewrite },
+    { model: 'gemini', name: 'Gemini Optimizer', focus: 'Structured context, multimodal readiness, and actionable output controls.', rewrite },
+    { model: 'llama', name: 'Open-Weight Optimizer', focus: 'Dense direct instructions, low ambiguity, and compact constraints.', rewrite },
   ];
 
   const currentRewrite = rewritesList.find(r => r.model === activeModel) || rewritesList[0];
