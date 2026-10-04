@@ -8,8 +8,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const DEFAULT_PRICE_ID = "price_1THnf7GCqwm95OGXXgpeoKIc";
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -35,7 +33,8 @@ serve(async (req) => {
     const stripe = new Stripe(secretKey, {
       apiVersion: "2025-08-27.basil",
     });
-    const expectedPriceId = Deno.env.get("STRIPE_PRICE_ID") || DEFAULT_PRICE_ID;
+    const expectedPriceId = Deno.env.get("STRIPE_PRICE_ID");
+    if (!expectedPriceId) throw new Error("Stripe price is not configured.");
 
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ["line_items.data.price"],
