@@ -26,16 +26,31 @@ serve(async (req) => {
     if (!secretKey) throw new Error("Stripe is not configured.");
 
     const appUrl = (Deno.env.get("APP_URL") || DEFAULT_APP_URL).replace(/\/$/, "");
-    const priceId = Deno.env.get("STRIPE_PRICE_ID");
-    if (!priceId) throw new Error("Stripe price is not configured.");
+    const priceLookupKey = Deno.env.get("STRIPE_PRICE_LOOKUP_KEY") || "promptgrade_premium_lifetime";
 
     const stripe = new Stripe(secretKey, {
       apiVersion: "2025-08-27.basil",
     });
 
+    const prices = await stripe.prices.list({
+      lookup_keys: [priceLookupKey],
+      active: true,
+      type: "one_time",
+      limit: 1,
+    });
+    const price = prices.data[0];
+
+    if (
+      !price ||
+      price.metadata?.app !== "promptgrade" ||
+      price.metadata?.entitlement !== "premium_lifetime"
+    ) {
+      throw new Error("PromptGrade Premium price is not configured correctly.");
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: price.id, quantity: 1 }],
       customer_creation: "always",
       billing_address_collection: "auto",
       metadata: {
