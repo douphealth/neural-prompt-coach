@@ -59,8 +59,11 @@ export function usePremium() {
       });
 
       if (error) throw error;
-      if (!data?.url) throw new Error('Checkout did not return a redirect URL.');
+      if (!data?.url || !data?.sessionId) {
+        throw new Error('Checkout did not return a valid redirect session.');
+      }
 
+      localStorage.setItem(SESSION_KEY, data.sessionId);
       window.location.assign(data.url);
     } catch (error: unknown) {
       console.error('Checkout initialization failed', error);
