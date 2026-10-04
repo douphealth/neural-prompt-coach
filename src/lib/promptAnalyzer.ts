@@ -40,7 +40,7 @@ const ROLE_KEYWORDS = ['you are', 'act as', 'as a', 'your role', 'persona', 'exp
 const STRUCTURE_KEYWORDS = ['step', 'first', 'then', 'next', 'finally', 'section', 'part', 'phase', 'stage', '1.', '2.', '3.'];
 const FORMAT_KEYWORDS = ['format', 'structure', 'bullet', 'heading', 'paragraph', 'list', 'table', 'markdown', 'json', 'csv', 'numbered'];
 const TONE_KEYWORDS = ['tone', 'style', 'voice', 'formal', 'casual', 'professional', 'friendly', 'conversational', 'academic'];
-const REASONING_KEYWORDS = ['think', 'step by step', 'reason', 'analyze', 'consider', 'evaluate', 'chain of thought', 'explain your reasoning', 'walk through'];
+const REASONING_KEYWORDS = ['analyze', 'consider', 'evaluate', 'verify', 'justify', 'assumption', 'criteria', 'trade-off', 'check your work', 'sanity check'];
 const EDGE_KEYWORDS = ['avoid', 'do not', "don't", 'never', 'unless', 'except', 'edge case', 'handle', 'if', 'otherwise', 'fallback'];
 const SPECIFICITY_KEYWORDS = ['specifically', 'exactly', 'precisely', 'word', 'character', 'example', 'such as', 'like', 'including', 'e.g.'];
 
@@ -141,12 +141,12 @@ function scoreReasoning(prompt: string): DimensionScore {
   let score = 20;
   if (matches > 0) score += 30;
   if (matches > 2) score += 20;
-  if (prompt.toLowerCase().includes('step by step')) score += 15;
-  if (prompt.toLowerCase().includes('chain of thought')) score += 15;
+  if (prompt.toLowerCase().includes('check your work')) score += 15;
+  if (prompt.toLowerCase().includes('verify')) score += 15;
 
   const feedback = score >= 75 ? 'Strong reasoning triggers — the AI will think deeply.' :
     score >= 50 ? 'Some reasoning cues present.' :
-    'No reasoning triggers. Add "think step by step" or "explain your reasoning."';
+    'No verification cues. Ask for explicit criteria, assumption checks, trade-offs, or a concise justification.';
 
   return { key: 'reasoning', label: 'Reasoning Activation', emoji: '🧠', score: clamp(score), feedback };
 }
@@ -305,18 +305,19 @@ function generateModelRewrites(prompt: string): ModelRewrite[] {
   return [
     {
       model: 'gpt-4o',
-      name: 'GPT-4o Optimizer',
-      focus: 'Chain-of-Thought reasoning, robust markdown structure, and detailed explanations.',
+      name: 'OpenAI Optimizer',
+      focus: 'Explicit success criteria, verification, concise rationale, and robust structure.',
       rewrite: `You are a world-class professional and expert in ${topic}. Your goal is to provide a comprehensive, highly rigorous response to the user's inquiry.
       
 [Core Task]
 ${cleanPrompt}
 
 [Execution Instructions]
-1. Take a deep breath and think step-by-step about the request before providing the final answer.
-2. Outline your primary reasoning chain inside a structured markdown list first.
-3. Address the topic exhaustively, focusing on real-world examples, actionable metrics, and concrete frameworks.
-4. Ensure each section has an H2 heading and clear, concise bullet points under it.
+1. Identify the key success criteria, assumptions, and constraints before answering.
+2. Verify important claims and surface uncertainty or missing inputs when they materially affect the result.
+3. Address the topic with concrete examples, actionable metrics, and decision-relevant trade-offs.
+4. Give a concise justification for major recommendations without exposing private internal reasoning.
+5. Use clear H2 headings and concise bullet points where they improve readability.
 
 [Tone & Style Guidelines]
 - Tone: Highly professional, objective, decisive, and authoritative.
@@ -325,7 +326,7 @@ ${cleanPrompt}
     },
     {
       model: 'claude',
-      name: 'Claude 3.5 Sonnet Optimizer',
+      name: 'Claude Optimizer',
       focus: 'Hierarchical XML tags, deep conceptual alignment, and complex instruction sets.',
       rewrite: `<system_instructions>
 You are an advanced academic specialist and senior strategist with deep domain expertise in ${topic}. Approach this task with extreme detail, high cognitive clarity, and strict adherence to structural requirements.
@@ -353,7 +354,7 @@ To execute successfully, adhere to these guidelines:
     },
     {
       model: 'gemini',
-      name: 'Gemini 1.5 Pro Optimizer',
+      name: 'Gemini Optimizer',
       focus: 'Collaborative, interactive checkpoints, structured lists, and multi-modal readiness.',
       rewrite: `## System Persona
 You are an interactive AI prompt coach and senior subject matter expert in ${topic}. Your focus is on generating highly practical, accessible, and structured insights.
@@ -375,7 +376,7 @@ To ensure maximum engagement and actionability:
     },
     {
       model: 'llama',
-      name: 'Llama-3 & DeepSeek Optimizer',
+      name: 'Open-Weight Optimizer',
       focus: 'Dense direct instructions, clear parameters, and strict negative constraints.',
       rewrite: `### Role
 You are an expert system designed specifically to execute requests regarding ${topic} with extreme accuracy and directness.
@@ -395,10 +396,10 @@ Execute the following prompt:
 
 function generateModelMatches(score: number): ModelMatch[] {
   return [
-    { model: 'GPT-4o', level: score > 50 ? 'excellent' : 'good', note: score > 50 ? 'Excellent match' : 'Add more structure for best results' },
-    { model: 'Claude Opus/Sonnet', level: score > 50 ? 'excellent' : 'good', note: score > 50 ? 'Excellent match' : 'Claude benefits from explicit formatting' },
-    { model: 'Gemini 2.5', level: score > 60 ? 'excellent' : 'good', note: score > 60 ? 'Excellent match' : 'Add more structure for Gemini' },
-    { model: 'Llama 3', level: score > 70 ? 'excellent' : score > 40 ? 'good' : 'poor', note: score > 70 ? 'Good match' : 'Simplify constraints for open-source models' },
+    { model: 'OpenAI', level: score > 50 ? 'excellent' : 'good', note: score > 50 ? 'Strong fit' : 'Add clearer success criteria and structure' },
+    { model: 'Claude', level: score > 50 ? 'excellent' : 'good', note: score > 50 ? 'Strong fit' : 'Use explicit context blocks and output constraints' },
+    { model: 'Gemini', level: score > 60 ? 'excellent' : 'good', note: score > 60 ? 'Strong fit' : 'Add clearer structure and source/context boundaries' },
+    { model: 'Open-weight models', level: score > 70 ? 'excellent' : score > 40 ? 'good' : 'poor', note: score > 70 ? 'Good fit' : 'Reduce ambiguity and keep constraints compact' },
     { model: 'Midjourney', level: /image|visual|design|photo|illustration|draw|paint/i.test('') ? 'good' : 'poor', note: 'Text-generation prompt — not applicable for image models' },
   ];
 }
