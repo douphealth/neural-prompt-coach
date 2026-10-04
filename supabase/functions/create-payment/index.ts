@@ -9,8 +9,6 @@ const corsHeaders = {
 };
 
 const DEFAULT_APP_URL = "https://promptgrade.efficientgptprompts.com";
-const DEFAULT_PRICE_ID = "price_1THnf7GCqwm95OGXXgpeoKIc";
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -28,7 +26,8 @@ serve(async (req) => {
     if (!secretKey) throw new Error("Stripe is not configured.");
 
     const appUrl = (Deno.env.get("APP_URL") || DEFAULT_APP_URL).replace(/\/$/, "");
-    const priceId = Deno.env.get("STRIPE_PRICE_ID") || DEFAULT_PRICE_ID;
+    const priceId = Deno.env.get("STRIPE_PRICE_ID");
+    if (!priceId) throw new Error("Stripe price is not configured.");
 
     const stripe = new Stripe(secretKey, {
       apiVersion: "2025-08-27.basil",
@@ -55,7 +54,7 @@ serve(async (req) => {
 
     if (!session.url) throw new Error("Stripe did not return a Checkout URL.");
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
