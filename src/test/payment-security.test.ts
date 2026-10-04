@@ -7,12 +7,14 @@ function source(path: string) {
 }
 
 describe("Stripe premium security invariants", () => {
-  it("requires the Stripe price to come from server-side configuration", () => {
+  it("resolves the active Stripe price by stable lookup key instead of hard-coded ids", () => {
     const checkout = source("supabase/functions/create-payment/index.ts");
     const verify = source("supabase/functions/verify-payment/index.ts");
 
-    expect(checkout).toContain('Deno.env.get("STRIPE_PRICE_ID")');
-    expect(verify).toContain('Deno.env.get("STRIPE_PRICE_ID")');
+    expect(checkout).toContain("promptgrade_premium_lifetime");
+    expect(verify).toContain("promptgrade_premium_lifetime");
+    expect(checkout).toContain("stripe.prices.list");
+    expect(verify).toContain("stripe.prices.list");
     expect(checkout).not.toMatch(/price_[A-Za-z0-9]{10,}/);
     expect(verify).not.toMatch(/price_[A-Za-z0-9]{10,}/);
   });
