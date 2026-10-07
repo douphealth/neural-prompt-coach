@@ -77,12 +77,14 @@ export default function Index() {
       const analysis = analyzePrompt(trimmed);
       setResult(analysis);
       
-      const newCount = analysisCount + 1;
-      setAnalysisCount(newCount);
-      localStorage.setItem(
-        'promptgrade_daily_usage',
-        JSON.stringify({ date: new Date().toLocaleDateString('en-CA'), count: newCount }),
-      );
+      if (!isPremium) {
+        const newCount = analysisCount + 1;
+        setAnalysisCount(newCount);
+        localStorage.setItem(
+          'promptgrade_daily_usage',
+          JSON.stringify({ date: new Date().toLocaleDateString('en-CA'), count: newCount }),
+        );
+      }
 
       // Append to localStorage prompt scan history
       try {
@@ -396,7 +398,10 @@ export default function Index() {
                         rewrite={result.rewrite}
                         originalScore={result.overallScore}
                         rewriteScore={Math.min(result.overallScore + 32, 96)}
-                        modelRewrites={result.modelRewrites}
+                        modelRewrites={isPremium ? result.modelRewrites : []}
+                        isPremium={isPremium}
+                        onUpgrade={handleUpgrade}
+                        isUpgradeLoading={isPremiumLoading}
                       />
                     </div>
 
