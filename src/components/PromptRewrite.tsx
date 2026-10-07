@@ -9,6 +9,9 @@ interface PromptRewriteProps {
   originalScore: number;
   rewriteScore: number;
   modelRewrites?: ModelRewrite[];
+  isPremium?: boolean;
+  onUpgrade?: () => void;
+  isUpgradeLoading?: boolean;
 }
 
 export default function PromptRewrite({
@@ -17,6 +20,9 @@ export default function PromptRewrite({
   originalScore,
   rewriteScore,
   modelRewrites = [],
+  isPremium = false,
+  onUpgrade,
+  isUpgradeLoading = false,
 }: PromptRewriteProps) {
   const [copied, setCopied] = useState(false);
   const [activeModel, setActiveModel] = useState<'gpt-4o' | 'claude' | 'gemini' | 'llama'>('gpt-4o');
@@ -27,13 +33,21 @@ export default function PromptRewrite({
   const [optimizedStream, setOptimizedStream] = useState('');
   const [currentExecuting, setCurrentExecuting] = useState<'idle' | 'original' | 'optimized' | 'both'>('idle');
 
-  // Fallback if no modelRewrites provided
-  const rewritesList = modelRewrites.length > 0 ? modelRewrites : [
+  const premiumFallback: ModelRewrite[] = [
     { model: 'gpt-4o', name: 'OpenAI Optimizer', focus: 'Explicit criteria, verification, concise rationale, and robust structure.', rewrite },
     { model: 'claude', name: 'Claude Optimizer', focus: 'Clear context boundaries, structured instructions, and explicit constraints.', rewrite },
     { model: 'gemini', name: 'Gemini Optimizer', focus: 'Structured context, multimodal readiness, and actionable output controls.', rewrite },
     { model: 'llama', name: 'Open-Weight Optimizer', focus: 'Dense direct instructions, low ambiguity, and compact constraints.', rewrite },
   ];
+
+  const rewritesList: ModelRewrite[] = isPremium
+    ? (modelRewrites.length > 0 ? modelRewrites : premiumFallback)
+    : [{
+        model: 'gpt-4o',
+        name: 'PromptGrade Optimized Rewrite',
+        focus: 'Core clarity, context, constraints, and output structure.',
+        rewrite,
+      }];
 
   const currentRewrite = rewritesList.find(r => r.model === activeModel) || rewritesList[0];
 
@@ -155,21 +169,32 @@ To achieve maximum results immediately, follow these specific steps:
         </div>
 
         {/* Model Tabs Selector */}
-        <div className="flex bg-secondary/80 p-1 rounded-lg border border-border/80 text-xs font-mono">
-          {rewritesList.map((r) => (
-            <button
-              key={r.model}
-              onClick={() => setActiveModel(r.model as 'gpt-4o' | 'claude' | 'gemini' | 'llama')}
-              className={`px-3 py-1.5 rounded-md transition-all font-semibold ${
-                activeModel === r.model
-                  ? 'bg-primary text-primary-foreground font-bold shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {r.model.toUpperCase()}
-            </button>
-          ))}
-        </div>
+        {isPremium ? (
+          <div className="flex bg-secondary/80 p-1 rounded-lg border border-border/80 text-xs font-mono">
+            {rewritesList.map((r) => (
+              <button
+                key={r.model}
+                onClick={() => setActiveModel(r.model as 'gpt-4o' | 'claude' | 'gemini' | 'llama')}
+                className={`px-3 py-1.5 rounded-md transition-all font-semibold ${
+                  activeModel === r.model
+                    ? 'bg-primary text-primary-foreground font-bold shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {r.model.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onUpgrade}
+            disabled={!onUpgrade || isUpgradeLoading}
+            className="bg-primary/10 border border-primary/20 text-primary px-3 py-2 rounded-lg text-xs font-display font-bold hover:bg-primary/15 disabled:opacity-50"
+          >
+            {isUpgradeLoading ? 'Opening checkout…' : 'Unlock multi-model rewrites — $7.99'}
+          </button>
+        )}
       </div>
 
       {/* Editor Layout */}
