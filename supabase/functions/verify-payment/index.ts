@@ -7,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const EXPECTED_PRICE_ID = Deno.env.get("STRIPE_PROMPTGRADE_PRICE_ID") || "price_1ULclVByiix0wtyT2nZtIAdW";
+const EXPECTED_LOOKUP_KEY = "promptgrade_premium_lifetime";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -44,7 +44,12 @@ serve(async (req) => {
     });
 
     const hasExpectedPrice = session.line_items?.data?.some(
-      (item) => item.price?.id === EXPECTED_PRICE_ID && item.quantity === 1,
+      (item) =>
+        item.price?.lookup_key === EXPECTED_LOOKUP_KEY &&
+        item.price?.unit_amount === 799 &&
+        item.price?.currency === "usd" &&
+        item.price?.type === "one_time" &&
+        item.quantity === 1,
     );
 
     const verified =
