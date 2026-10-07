@@ -23,6 +23,26 @@ import { usePremium } from '@/hooks/usePremium';
 import { toast } from '@/hooks/use-toast';
 
 const FREE_DAILY_LIMIT = 5;
+const FREE_USAGE_KEY = 'promptgrade_daily_usage';
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function readDailyUsage() {
+  try {
+    const raw = localStorage.getItem(FREE_USAGE_KEY);
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw) as { date?: string; count?: number };
+    return parsed.date === getTodayKey() && Number.isFinite(parsed.count) ? Number(parsed.count) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeDailyUsage(count: number) {
+  localStorage.setItem(FREE_USAGE_KEY, JSON.stringify({ date: getTodayKey(), count }));
+}
 
 type TabId = 'scanner' | 'chains' | 'library' | 'masterclass' | 'analytics';
 
@@ -40,13 +60,11 @@ export default function Index() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { isPremium, isLoading: isPremiumLoading, handleUpgrade, handleDowngrade } = usePremium();
 
-  // Reset page layout on load if needed
   useEffect(() => {
-    // Read count from local storage
-    const count = localStorage.getItem('promptgrade_count');
-    if (count) {
-      setAnalysisCount(Number(count));
-    }
+    const count = readDailyUsage();
+    setAnalysisCount(count);
+    writeDailyUsage(count);
+    localStorage.removeItem('promptgrade_count');
   }, []);
 
   const handleAnalyze = () => {
@@ -68,9 +86,11 @@ export default function Index() {
       const analysis = analyzePrompt(trimmed);
       setResult(analysis);
       
-      const newCount = analysisCount + 1;
-      setAnalysisCount(newCount);
-      localStorage.setItem('promptgrade_count', String(newCount));
+      if (!isPremium) {
+        const newCount = analysisCount + 1;
+        setAnalysisCount(newCount);
+        writeDailyUsage(newCount);
+      }
 
       // Append to localStorage prompt scan history
       try {
@@ -391,7 +411,10 @@ export default function Index() {
                         rewrite={result.rewrite}
                         originalScore={result.overallScore}
                         rewriteScore={Math.min(result.overallScore + 32, 96)}
-                        modelRewrites={result.modelRewrites}
+                        modelRewrites={isPremium ? result.modelRewrites : []}
+                        isPremium={isPremium}
+                        onUpgrade={handleUpgrade}
+                        isUpgradeLoading={isPremiumLoading}
                       />
                     </div>
 
