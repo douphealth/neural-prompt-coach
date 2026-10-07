@@ -9,6 +9,9 @@ interface PromptRewriteProps {
   originalScore: number;
   rewriteScore: number;
   modelRewrites?: ModelRewrite[];
+  isPremium?: boolean;
+  onUpgrade?: () => void;
+  isUpgradeLoading?: boolean;
 }
 
 export default function PromptRewrite({
@@ -17,6 +20,9 @@ export default function PromptRewrite({
   originalScore,
   rewriteScore,
   modelRewrites = [],
+  isPremium = false,
+  onUpgrade,
+  isUpgradeLoading = false,
 }: PromptRewriteProps) {
   const [copied, setCopied] = useState(false);
   const [activeModel, setActiveModel] = useState<'gpt-4o' | 'claude' | 'gemini' | 'llama'>('gpt-4o');
@@ -27,13 +33,21 @@ export default function PromptRewrite({
   const [optimizedStream, setOptimizedStream] = useState('');
   const [currentExecuting, setCurrentExecuting] = useState<'idle' | 'original' | 'optimized' | 'both'>('idle');
 
-  // Fallback if no modelRewrites provided
-  const rewritesList = modelRewrites.length > 0 ? modelRewrites : [
-    { model: 'gpt-4o', name: 'GPT-4o Optimizer', focus: 'General multi-purpose structuring.', rewrite },
-    { model: 'claude', name: 'Claude Optimizer', focus: 'XML tags & deep instructions.', rewrite },
-    { model: 'gemini', name: 'Gemini Optimizer', focus: 'Interactive multi-modal format.', rewrite },
-    { model: 'llama', name: 'Llama Optimizer', focus: 'Dense instructions & strict constraints.', rewrite },
+  const premiumFallback: ModelRewrite[] = [
+    { model: 'gpt-4o', name: 'OpenAI Optimizer', focus: 'Explicit criteria, verification, concise rationale, and robust structure.', rewrite },
+    { model: 'claude', name: 'Claude Optimizer', focus: 'Clear context boundaries, structured instructions, and explicit constraints.', rewrite },
+    { model: 'gemini', name: 'Gemini Optimizer', focus: 'Structured context, multimodal readiness, and actionable output controls.', rewrite },
+    { model: 'llama', name: 'Open-Weight Optimizer', focus: 'Dense direct instructions, low ambiguity, and compact constraints.', rewrite },
   ];
+
+  const rewritesList: ModelRewrite[] = isPremium
+    ? (modelRewrites.length > 0 ? modelRewrites : premiumFallback)
+    : [{
+        model: 'gpt-4o',
+        name: 'PromptGrade Optimized Rewrite',
+        focus: 'Core clarity, context, constraints, and output structure.',
+        rewrite,
+      }];
 
   const currentRewrite = rewritesList.find(r => r.model === activeModel) || rewritesList[0];
 
@@ -93,9 +107,6 @@ To achieve maximum results immediately, follow these specific steps:
   useEffect(() => {
     if (!isPlaying) return;
 
-    let originalInterval: NodeJS.Timeout;
-    let optimizedInterval: NodeJS.Timeout;
-
     setOriginalStream('');
     setOptimizedStream('');
     setCurrentExecuting('both');
@@ -107,7 +118,7 @@ To achieve maximum results immediately, follow these specific steps:
     let optIdx = 0;
 
     // Stream original (slower, generic, shorter)
-    originalInterval = setInterval(() => {
+    const originalInterval = setInterval(() => {
       if (origIdx < origWords.length) {
         setOriginalStream(prev => prev + (origIdx === 0 ? '' : ' ') + origWords[origIdx]);
         origIdx++;
@@ -121,7 +132,7 @@ To achieve maximum results immediately, follow these specific steps:
     }, 45);
 
     // Stream optimized (faster, highly structured, longer)
-    optimizedInterval = setInterval(() => {
+    const optimizedInterval = setInterval(() => {
       if (optIdx < optWords.length) {
         setOptimizedStream(prev => prev + (optIdx === 0 ? '' : ' ') + optWords[optIdx]);
         optIdx++;
@@ -158,21 +169,32 @@ To achieve maximum results immediately, follow these specific steps:
         </div>
 
         {/* Model Tabs Selector */}
-        <div className="flex bg-secondary/80 p-1 rounded-lg border border-border/80 text-xs font-mono">
-          {rewritesList.map((r) => (
-            <button
-              key={r.model}
-              onClick={() => setActiveModel(r.model as any)}
-              className={`px-3 py-1.5 rounded-md transition-all font-semibold ${
-                activeModel === r.model
-                  ? 'bg-primary text-primary-foreground font-bold shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {r.model.toUpperCase()}
-            </button>
-          ))}
-        </div>
+        {isPremium ? (
+          <div className="flex bg-secondary/80 p-1 rounded-lg border border-border/80 text-xs font-mono">
+            {rewritesList.map((r) => (
+              <button
+                key={r.model}
+                onClick={() => setActiveModel(r.model as 'gpt-4o' | 'claude' | 'gemini' | 'llama')}
+                className={`px-3 py-1.5 rounded-md transition-all font-semibold ${
+                  activeModel === r.model
+                    ? 'bg-primary text-primary-foreground font-bold shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {r.model.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onUpgrade}
+            disabled={!onUpgrade || isUpgradeLoading}
+            className="bg-primary/10 border border-primary/20 text-primary px-3 py-2 rounded-lg text-xs font-display font-bold hover:bg-primary/15 disabled:opacity-50"
+          >
+            {isUpgradeLoading ? 'Opening checkout…' : 'Unlock multi-model rewrites — $7.99'}
+          </button>
+        )}
       </div>
 
       {/* Editor Layout */}
@@ -237,13 +259,13 @@ To achieve maximum results immediately, follow these specific steps:
             </div>
             <div>
               <h4 className="font-display font-bold text-foreground text-base flex items-center gap-1.5">
-                Live Playground Simulator
+                Prompt Output Demonstration
                 <span className="text-[10px] font-mono font-semibold bg-primary/10 border border-primary/20 text-primary px-1.5 py-0.5 rounded">
-                  Interactive
+                  Demo
                 </span>
               </h4>
               <p className="text-xs text-muted-foreground">
-                Compare AI outputs generated by the Original vs. the Optimized prompts in real-time.
+                Preview illustrative output differences. This demonstration does not call external AI models.
               </p>
             </div>
           </div>
@@ -256,7 +278,7 @@ To achieve maximum results immediately, follow these specific steps:
             {isPlaying ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                Simulating LLM Output...
+                Rendering Demo Output...
               </>
             ) : (
               <>
