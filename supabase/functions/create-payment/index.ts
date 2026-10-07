@@ -36,10 +36,16 @@ serve(async (req) => {
 
     const requestOrigin = req.headers.get("origin") || DEFAULT_ORIGIN;
     const origin = ALLOWED_ORIGINS.has(requestOrigin) ? requestOrigin : DEFAULT_ORIGIN;
-    const priceId = Deno.env.get("STRIPE_PROMPTGRADE_PRICE_ID") || "price_1ULclVByiix0wtyT2nZtIAdW";
+    const lookupKey = "promptgrade_premium_lifetime";
+    const prices = await stripe.prices.list({ lookup_keys: [lookupKey], active: true, limit: 1 });
+    const price = prices.data[0];
+
+    if (!price || price.unit_amount !== 799 || price.currency !== "usd" || price.type !== "one_time") {
+      throw new Error("PromptGrade Premium price is missing or misconfigured.");
+    }
 
     const session = await stripe.checkout.sessions.create({
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: price.id, quantity: 1 }],
       mode: "payment",
       success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
