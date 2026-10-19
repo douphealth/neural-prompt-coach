@@ -1,48 +1,67 @@
-import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+const SESSION_KEY = "promptgrade_session_id";
+
+/**
+ * UI convenience only: real premium authorization must also be checked on every
+ * server-side premium API operation. Never trust a localStorage Boolean.
+ */
+export async function verifyPremiumPurchase(sessionId: string): Promise<boolean> {
+  if (!/^cs_(live|test)_[a-zA-Z0-9]{10,200}$/.test(sessionId)) return false;
+  const { data, error } = await supabase.functions.invoke("verify-payment", {
+    body: { session_id: sessionId },
+  });
+  if (error) return false;
+  return data?.entitled === true && data?.verified === true;
+}
 
 export function usePremium() {
   const [isLoading, setIsLoading] = useState(false);
-  const [isPremium, setIsPremium] = useState(localStorage.getItem('promptgrade_premium') === 'true');
+  const [isPremium, setIsPremium] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const savedSession = localStorage.getItem(SESSION_KEY);
+    if (savedSession) {
+      void verifyPremiumPurchase(savedSession).then((valid) => {
+        if (active) setIsPremium(valid);
+      }).catch(() => {
+        if (active) setIsPremium(false);
+      });
+    }
+    return () => { active = false; };
+  }, []);
 
   const handleUpgrade = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Try supabase function first
-      const { data, error } = await supabase.functions.invoke('create-payment');
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, '_blank');
+      const { data, error } = await supabase.functions.invoke("create-payment");
+      if (error || !data?.url) throw new Error("Checkout is temporarily unavailable.");
+      const target = new URL(data.url);
+      if (target.protocol !== "https:" || target.hostname !== "checkout.stripe.com") {
+        throw new Error("Unexpected payment destination.");
       }
-    } catch (err: any) {
-      // Friendly Sandbox Override for local review and offline testing
-      console.warn('Supabase edge function create-payment not detected or offline. Activating Sandbox Payment Success flow.');
-      
+      window.location.assign(target.href);
+    } catch {
+      // Security invariant: a failed checkout NEVER upgrades an account.
       toast({
-        title: 'Initializing Sandbox Checkout',
-        description: 'Bypassing payment gateway... Unlocking premium workspace!',
+        title: "Secure checkout unavailable",
+        description: "Please try again later. No premium access has been granted and you have not been charged by this action.",
+        variant: "destructive",
       });
-      
-      // Delay for premium experience animation
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      
-      localStorage.setItem('promptgrade_premium', 'true');
-      setIsPremium(true);
-      window.location.search = '?session_id=sandbox_mock_ref';
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const handleDowngrade = useCallback(() => {
-    localStorage.removeItem('promptgrade_premium');
-    localStorage.removeItem('promptgrade_session_id');
+    // Clear this browser's purchase session, not the actual Stripe purchase.
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem("promptgrade_premium");
     setIsPremium(false);
-    toast({
-      title: 'Premium Reset',
-      description: 'Workspace returned to free tier limits.',
-    });
+    toast({ title: "Session cleared", description: "Your purchase is not cancelled." });
   }, []);
 
   return { isPremium, isLoading, handleUpgrade, handleDowngrade };
