@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://promptgrade.efficientgptprompts.com",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -17,13 +17,16 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    const origin = req.headers.get("origin") || "https://promptgrade.efficientgptprompts.com";
+    const origin = "https://promptgrade.efficientgptprompts.com";
+    const priceId = Deno.env.get("PROMPTGRADE_PRICE_ID");
+    if (!priceId) throw new Error("Premium checkout is not configured");
+    if (req.headers.get("origin") !== origin) return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
 
     // Guest checkout - no auth required
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
-          price: "price_1THnf7GCqwm95OGXXgpeoKIc",
+          price: priceId,
           quantity: 1,
         },
       ],
