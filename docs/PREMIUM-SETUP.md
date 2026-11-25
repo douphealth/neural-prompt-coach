@@ -21,59 +21,55 @@ Before this change, `/payment-success` set `localStorage.promptgrade_premium = "
 - If it can't be verified (no session id, or the API isn't configured yet), Premium **stays unlocked** until `LEGACY_GRACE_UNTIL` (`2027-01-31`, in `src/lib/premium.ts`). A banner asks the buyer to confirm with Restore.
 - Only when Stripe says definitively that the session was not paid, was refunded, or is another product does the legacy unlock end.
 
-## What the owner needs to approve and set up (nothing below has been done)
+## Current setup (done 2026-11-25, owner-approved)
 
-### 1. Stripe (read-only key, no change to the Payment Link if the redirect is already set)
+### Hosting topology (verified)
 
-1. Find the Payment Link id (`plink_…`) for `buy.stripe.com/eVq28r1Li4CI0c5bn8ejK04` (Dashboard → Payment Links → the PromptGrade Premium link; the id is in the URL).
-2. Check the link's **After payment** setting. It must redirect to
-   `https://promptgrade.efficientgptprompts.com/payment-success?session_id={CHECKOUT_SESSION_ID}`.
-   If it shows Stripe's confirmation page instead, changing it is a Stripe change that needs your approval.
-3. Create a **restricted key** in the same Stripe account with **Read** on: Checkout Sessions, PaymentIntents, Charges. Nothing else.
-4. Optional: Settings → Customer emails → "Successful payments" on, so buyers get a receipt number they can use for Restore.
+- `promptgrade.efficientgptprompts.com` is answered by a **proxy Worker** that serves `robots.txt` itself and forwards everything else (including `POST /api/*` with body and `Origin`) to **`promptgrade-egp.gearup-flow-master.pages.dev`**.
+- So production = Pages project **`gearup-flow-master`**, branch **`promptgrade-egp`**. That project's production branch is `main` (another app), so `promptgrade-egp` uses the project's **Preview** environment variables, which are shared with other apps' preview branches.
+- The custom domain is also attached to Pages project `neural-prompt-coach-fixed` (production branch `main`), but the Worker answers first. It was given the same build and secrets (generic names) as a fallback.
+- The Worker is not visible to the Cloudflare tokens used here; its `robots.txt` lacks `Disallow: /api/` (low impact: the API is POST-only).
 
-No webhook is required: entitlement is checked against Stripe directly. (A webhook could be added later for analytics; that would be a Stripe change.)
+### Stripe
 
-### 2. Cloudflare Pages secrets (project `gearup-flow-master`)
+- Payment Link `plink_1UCvLhGCqwm95OGXICH7bhZC` (price `price_1THnf7GCqwm95OGXXgpeoKIc`, $7.99, product `prod_UGKJM4JmlBhKWs`). Its After-payment redirect was already `https://promptgrade.efficientgptprompts.com/payment-success?session_id={CHECKOUT_SESSION_ID}`; not changed.
+- Product description changed to honest copy (no "200+ templates").
+- No webhook needed.
+- Note: Stripe rejects `payment_link` and `customer_details[email]` in the same `checkout/sessions` list query, so restore filters by email and then checks the Payment Link itself.
 
-Set for the environment that serves the `promptgrade-egp` branch (and for Preview, to test):
+### Pages variables (gearup-flow-master → Settings → Variables → **Preview**)
 
 | Name | Value |
 |---|---|
-| `STRIPE_SECRET_KEY` | the restricted key from step 1.3 (`rk_live_…`) |
-| `PROMPTGRADE_PAYMENT_LINK_ID` | the `plink_…` id |
-| `LICENSE_SIGNING_SECRET` | 32+ random characters (e.g. `openssl rand -hex 32`); rotating it signs everyone out |
-| `TURNSTILE_SECRET_KEY` (optional) | with build var `VITE_TURNSTILE_SITE_KEY`, adds a Turnstile check to Restore |
-| `RATE_LIMIT` KV binding (optional) | durable rate limiting |
+| `PROMPTGRADE_STRIPE_SECRET_KEY` | Stripe restricted key "new API restrictive key (22-11-2026)". **To do:** it can also write products; replace with a key that has only Read on Checkout Sessions, PaymentIntents, Charges, then redeploy. |
+| `PROMPTGRADE_PAYMENT_LINK_ID` | `plink_1UCvLhGCqwm95OGXICH7bhZC` |
+| `PROMPTGRADE_LICENSE_SIGNING_SECRET` | 64 random hex chars, not stored anywhere else. Changing it signs every buyer out (they can Restore). |
 
-```
-npx wrangler pages secret put STRIPE_SECRET_KEY --project-name gearup-flow-master
-npx wrangler pages secret put PROMPTGRADE_PAYMENT_LINK_ID --project-name gearup-flow-master
-npx wrangler pages secret put LICENSE_SIGNING_SECRET --project-name gearup-flow-master
-```
+The functions read the `PROMPTGRADE_*` names first and fall back to `STRIPE_SECRET_KEY` / `LICENSE_SIGNING_SECRET`. Optional: `TURNSTILE_SECRET_KEY` (+ build var `VITE_TURNSTILE_SITE_KEY`), `RATE_LIMIT` KV binding.
 
-### 3. Preview, then production
+### Deploy
 
 ```
 npm ci && npm test && npm run build
-# preview (not production): run from the repo root so ./functions is included
-npx wrangler pages deploy dist --project-name gearup-flow-master --branch promptgrade-preview-20261125
-# production (needs owner approval): the branch the Worker proxies
-npx wrangler pages deploy dist --project-name gearup-flow-master --branch promptgrade-egp
+# run from the repo root so ./functions is included
+npx wrangler pages deploy dist --project-name gearup-flow-master --branch promptgrade-preview-20261125   # preview
+npx wrangler pages deploy dist --project-name gearup-flow-master --branch promptgrade-egp                # production (live)
 ```
 
-The custom domain is served by a Worker that proxies the `promptgrade-egp` branch alias. Check that it forwards `POST /api/*` with the request body and the `Origin` header unchanged. Then purge the Cloudflare cache for `promptgrade.efficientgptprompts.com`.
+Then purge the Cloudflare cache for host `promptgrade.efficientgptprompts.com`. Deploying needs a token with Pages edit on account `5dc0401c…`.
 
-### 4. Verify after production deploy
+### Verified on live after deploy (2026-11-25)
 
-- `/payment-success?session_id=anything` → "Order not found / Invalid", Premium stays locked.
-- "Unlock Premium" → Stripe shows "PromptGrade™ Premium $7.99" (do not pay).
-- One real purchase (by the owner, refundable) → success page shows the order reference and receipt link; Restore works in a private window with email + receipt number; refund → Premium ends within a day.
+- `/payment-success?session_id=anything` → "Invalid order reference"; a well-formed unknown `cs_live_…` → "Order not found"; Premium stays locked.
+- Restore with an unknown email → "couldn't match", nothing unlocked; foreign `Origin` → 403.
+- "Go Premium" → Stripe "PromptGrade™ Premium $7.99" (not paid).
+- Not yet verified: the paid path. **Owner:** make one real purchase, check the success page (order reference + receipt link), Restore in a private window with email + receipt number, then refund and confirm Premium ends within a day.
 
 ### Rollback
 
-- Code: redeploy the previous build to `promptgrade-egp` (Cloudflare Pages → Deployments → previous deployment → "Rollback"), or `git revert` the merge commit and redeploy.
+- Code: Cloudflare Pages → gearup-flow-master → Deployments → `9b32d950` (branch promptgrade-egp, 2026-09-07) → "Retry deployment" (re-publishes the old build to the branch), then purge the host. Note the old build lets anyone unlock Premium via `/payment-success?session_id=anything`.
 - Secrets can stay; without the new code they are unused.
+- Stripe description: restore the old text in the Dashboard (old text is in `CHANGELOG-AGENTS.md` in the site folder).
 
 ## Email features (off)
 
