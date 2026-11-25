@@ -15,41 +15,41 @@ interface Props {
 export default function BlueprintCapture({ open, onClose }: Props) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle');
+  const [emailed, setEmailed] = useState(false);
 
   const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+  const download = () => {
+    const a = document.createElement('a');
+    a.href = BLUEPRINT_URL;
+    a.download = 'PromptGrade-Blueprint.pdf';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
 
   const submit = async () => {
     if (!isValid || status === 'loading') return;
     setStatus('loading');
+    try { localStorage.setItem('promptgrade_blueprint_email', email.trim()); } catch { /* ignore */ }
+    let sent = false;
     try {
       const { data, error } = await supabase.functions.invoke('send-blueprint', {
         body: { email: email.trim(), source: 'blueprint_download' },
       });
-      if (error) throw error;
-      setStatus('done');
-      try { localStorage.setItem('promptgrade_blueprint_email', email.trim()); } catch {}
-      // Trigger PDF download immediately
-      const a = document.createElement('a');
-      a.href = BLUEPRINT_URL;
-      a.download = 'PromptGrade-Blueprint.pdf';
-      a.rel = 'noopener';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      toast({
-        title: data?.emailed === false ? 'Download started' : 'Check your inbox',
-        description: data?.emailed === false
-          ? 'Your PDF is downloading. Email is queued and will arrive shortly.'
-          : 'PDF downloading now — we also sent a copy to your inbox.',
-      });
-    } catch (err: any) {
-      setStatus('idle');
-      toast({
-        title: 'Something went wrong',
-        description: err?.message ?? 'Please try again in a moment.',
-        variant: 'destructive',
-      });
+      sent = !error && data?.emailed !== false;
+    } catch {
+      sent = false;
     }
+    // The PDF is a static file: the download never depends on the email service.
+    download();
+    setEmailed(sent);
+    setStatus('done');
+    toast({
+      title: 'Download started',
+      description: sent ? 'We also sent a copy to your inbox.' : 'Your PDF is downloading. We could not email a copy right now.',
+    });
   };
 
   return (
@@ -85,7 +85,7 @@ export default function BlueprintCapture({ open, onClose }: Props) {
                   <FileText className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-accent font-bold">Free · 18-page PDF</div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-accent font-bold">Free · 13-page PDF</div>
                   <h2 className="text-xl font-display font-bold text-foreground leading-tight">The PromptGrade Blueprint</h2>
                 </div>
               </div>
@@ -148,8 +148,10 @@ export default function BlueprintCapture({ open, onClose }: Props) {
                   <div className="w-12 h-12 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center mx-auto mb-3">
                     <Sparkles className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="font-display font-bold text-foreground mb-1">Sent. Downloading now.</h3>
-                  <p className="text-xs text-muted-foreground mb-4">A copy is on its way to <span className="text-primary font-mono">{email}</span>.</p>
+                  <h3 className="font-display font-bold text-foreground mb-1">Downloading now.</h3>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    {emailed ? <>A copy is on its way to <span className="text-primary font-mono">{email}</span>.</> : 'Use the link below if the download did not start.'}
+                  </p>
                   <a
                     href={BLUEPRINT_URL}
                     download

@@ -3,44 +3,52 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PromptGrade™ — AI Prompt Analyzer &amp; Optimizer | Free Prompt Scoring Tool</title>
-    <meta name="description" content="Paste any AI prompt and instantly get a 0-100 efficiency score, detailed analysis across 8 dimensions, and an optimized rewrite. Free prompt analyzer by EfficientGPTPrompts.com" />
+    <title>PromptGrade: Free AI Prompt Grader &amp; Analyzer (Score Out of 100)</title>
+    <meta name="description" content="Paste a ChatGPT, Claude or Gemini prompt and get a 0-100 score across 8 dimensions, with the reason for every point and a suggested rewrite. Free, runs in your browser. By EfficientGPTPrompts.com" />
     <meta name="author" content="EfficientGPTPrompts.com" />
+    <meta name="theme-color" content="#0b1120" />
     <link rel="canonical" href="https://promptgrade.efficientgptprompts.com/" />
 
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="EfficientGPTPrompts" />
     <meta property="og:url" content="https://promptgrade.efficientgptprompts.com/" />
-    <meta property="og:title" content="PromptGrade™ — AI Prompt Analyzer &amp; Optimizer" />
-    <meta property="og:description" content="Paste any AI prompt and instantly get a 0-100 efficiency score, detailed analysis across 8 dimensions, and an optimized rewrite. Free prompt analyzer by EfficientGPTPrompts.com" />
-    <meta property="og:image" content="https://promptgrade.efficientgptprompts.com/logo.png" />
+    <meta property="og:title" content="PromptGrade: Free AI Prompt Grader" />
+    <meta property="og:description" content="Score any AI prompt out of 100 across 8 dimensions, see why, and get a suggested rewrite. Free, in your browser." />
+    <meta property="og:image" content="https://promptgrade.efficientgptprompts.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@EfficientGPT" />
-    <meta name="twitter:title" content="PromptGrade™ — AI Prompt Analyzer &amp; Optimizer" />
-    <meta name="twitter:description" content="Paste any AI prompt and instantly get a 0-100 efficiency score, detailed analysis across 8 dimensions, and an optimized rewrite. Free prompt analyzer by EfficientGPTPrompts.com" />
-    <meta name="twitter:image" content="https://promptgrade.efficientgptprompts.com/logo.png" />
+    <meta name="twitter:title" content="PromptGrade: Free AI Prompt Grader" />
+    <meta name="twitter:description" content="Score any AI prompt out of 100 across 8 dimensions, see why, and get a suggested rewrite. Free, in your browser." />
+    <meta name="twitter:image" content="https://promptgrade.efficientgptprompts.com/og-image.png" />
 
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "PromptGrade™",
+      "@type": "WebApplication",
+      "name": "PromptGrade",
       "applicationCategory": "UtilitiesApplication",
-      "operatingSystem": "Web",
-      "description": "AI Prompt Analyzer & Optimizer — get a 0-100 efficiency score, detailed analysis across 8 dimensions, and an optimized rewrite.",
+      "operatingSystem": "Web browser",
+      "description": "Scores AI prompts from 0 to 100 against an 8-dimension checklist (clarity, structure, specificity, token efficiency, reasoning, output control, constraints, reusability), explains each point and suggests a rewrite.",
       "url": "https://promptgrade.efficientgptprompts.com/",
+      "isAccessibleForFree": true,
       "offers": [
-        { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free tier — 3 analyses per day" },
-        { "@type": "Offer", "price": "7.99", "priceCurrency": "USD", "description": "Premium — unlimited analyses forever" }
+        { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD", "description": "5 prompt scans per day" },
+        { "@type": "Offer", "name": "Premium", "price": "7.99", "priceCurrency": "USD", "description": "One-time payment: unlimited scans, Prompt Chains builder, Masterclass and Workspace Analytics" }
       ],
-      "creator": {
+      "publisher": {
         "@type": "Organization",
-        "name": "EfficientGPTPrompts.com",
-        "url": "https://efficientgptprompts.com"
+        "name": "EfficientGPTPrompts",
+        "url": "https://efficientgptprompts.com/"
       }
     }
     </script>
@@ -48,6 +56,11 @@
 
   <body>
     <div id="root"></div>
+    <noscript>
+      <h1>PromptGrade: Free AI Prompt Grader</h1>
+      <p>PromptGrade scores AI prompts from 0 to 100 against an 8-dimension checklist and suggests a rewrite. It needs JavaScript to run.</p>
+      <p><a href="https://efficientgptprompts.com/promptgrade/">About PromptGrade</a> · <a href="https://efficientgptprompts.com/ai-prompt-library/">AI prompt library</a> · <a href="https://efficientgptprompts.com/">EfficientGPTPrompts.com</a></p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
