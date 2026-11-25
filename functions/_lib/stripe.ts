@@ -122,11 +122,13 @@ export async function findPurchaseByEmail(env: Env, email: string, proofRaw: str
   const emails = Array.from(new Set([email.trim(), email.trim().toLowerCase()]));
   try {
     for (const e of emails) {
+      // Stripe rejects `payment_link` and `customer_details` in the same list query
+      // ("You may only specify one of these parameters"), so filter by email here;
+      // judgeSession() then rejects sessions from any other Payment Link.
       const { status, body } = await stripeGet(env, 'checkout/sessions', [
-        ['payment_link', env.PROMPTGRADE_PAYMENT_LINK_ID as string],
         ['customer_details[email]', e],
         ['status', 'complete'],
-        ['limit', '20'],
+        ['limit', '100'],
         ['expand[]', 'data.payment_intent.latest_charge'],
       ]);
       if (status !== 200 || !Array.isArray(body?.data)) return { reason: 'stripe_unavailable' };

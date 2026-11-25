@@ -118,8 +118,15 @@ describe('POST /api/restore', () => {
     const j = (await (await restorePost({ request: req('/api/restore', { email: 'buyer@example.com', proof: 'Receipt #1234-5678' }), env })).json()) as any;
     expect(j.ok).toBe(true);
     const url = String(fetchMock.mock.calls[0][0]);
-    expect(url).toContain('payment_link=plink_TEST123');
+    // Stripe rejects payment_link + customer_details together (HTTP 400), so only the email filter is sent.
+    expect(url).not.toContain('payment_link=');
     expect(url).toContain('customer_details%5Bemail%5D=buyer%40example.com');
+  });
+
+  it('does not restore a purchase made through another Payment Link', async () => {
+    stripeResponse = { status: 200, body: { object: 'list', data: [session({ payment_link: 'plink_OTHER' })] } };
+    const j = (await (await restorePost({ request: req('/api/restore', { email: 'buyer@example.com', proof: '1234-5678' }), env })).json()) as any;
+    expect(j).toEqual({ ok: false, error: 'no_match' });
   });
 
   it('restores with email + order reference', async () => {
