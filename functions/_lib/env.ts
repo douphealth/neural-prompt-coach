@@ -7,6 +7,13 @@ export interface KVLike {
 }
 
 export interface Env {
+  /**
+   * PromptGrade-specific names. The Pages project that serves PromptGrade (gearup-flow-master,
+   * branch promptgrade-egp) shares its preview environment with other apps, so these unique
+   * names take priority over the generic ones below to avoid collisions.
+   */
+  PROMPTGRADE_STRIPE_SECRET_KEY?: string;
+  PROMPTGRADE_LICENSE_SIGNING_SECRET?: string;
   /** Stripe restricted key (read-only: Checkout Sessions, PaymentIntents, Charges) of the account that owns the Payment Link. */
   STRIPE_SECRET_KEY?: string;
   /** The Payment Link id (plink_...) behind https://buy.stripe.com/eVq28r1Li4CI0c5bn8ejK04. */
@@ -19,6 +26,15 @@ export interface Env {
   TURNSTILE_SECRET_KEY?: string;
   /** Optional KV namespace for durable rate limiting (falls back to per-isolate memory). */
   RATE_LIMIT?: KVLike;
+}
+
+/** Returns env with the PromptGrade-specific names applied over the generic ones. */
+export function resolveEnv(env: Env): Env {
+  return {
+    ...env,
+    STRIPE_SECRET_KEY: env.PROMPTGRADE_STRIPE_SECRET_KEY || env.STRIPE_SECRET_KEY,
+    LICENSE_SIGNING_SECRET: env.PROMPTGRADE_LICENSE_SIGNING_SECRET || env.LICENSE_SIGNING_SECRET,
+  };
 }
 
 export function isConfigured(env: Env): boolean {

@@ -2,7 +2,7 @@
 // Checks a stored license: the signature must be valid, and the purchase must still be paid
 // and not refunded in Stripe. If Stripe cannot be reached, a validly signed license stays
 // valid (buyers are never locked out by an outage).
-import { isConfigured, type Env } from '../_lib/env';
+import { isConfigured, resolveEnv, type Env } from '../_lib/env';
 import { json, originAllowed, rateLimit, readJson } from '../_lib/http';
 import { verifyLicense } from '../_lib/license';
 import { verifySession } from '../_lib/stripe';
@@ -12,7 +12,8 @@ interface Ctx {
   env: Env;
 }
 
-export async function onRequestPost({ request, env }: Ctx): Promise<Response> {
+export async function onRequestPost({ request, env: rawEnv }: Ctx): Promise<Response> {
+  const env = resolveEnv(rawEnv);
   if (!originAllowed(request, env)) return json({ ok: false, error: 'forbidden' }, 403);
   if (!(await rateLimit(request, env, 'license', 30, 600))) return json({ ok: false, error: 'rate_limited' });
   if (!isConfigured(env)) return json({ ok: false, error: 'not_configured' });

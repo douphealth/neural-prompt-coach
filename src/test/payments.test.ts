@@ -6,7 +6,7 @@ import { onRequestPost as restorePost } from '../../functions/api/restore';
 import { onRequestPost as licensePost } from '../../functions/api/license';
 import { signLicense, verifyLicense } from '../../functions/_lib/license';
 import { normaliseProof } from '../../functions/_lib/stripe';
-import type { Env } from '../../functions/_lib/env';
+import { resolveEnv, type Env } from '../../functions/_lib/env';
 
 const PLINK = 'plink_TEST123';
 const SECRET = 'x'.repeat(40);
@@ -200,5 +200,23 @@ describe('normaliseProof', () => {
     expect(normaliseProof('pi_abcdefghijklmnop')?.kind).toBe('payment_intent');
     expect(normaliseProof('cs_live_abcdefghijklmnop')?.kind).toBe('session');
     expect(normaliseProof('hello')).toBeNull();
+  });
+});
+
+describe('resolveEnv', () => {
+  it('prefers the PromptGrade-specific names over the generic ones', () => {
+    const r = resolveEnv({
+      STRIPE_SECRET_KEY: 'generic',
+      PROMPTGRADE_STRIPE_SECRET_KEY: 'specific',
+      LICENSE_SIGNING_SECRET: 'g'.repeat(32),
+      PROMPTGRADE_LICENSE_SIGNING_SECRET: 's'.repeat(32),
+    });
+    expect(r.STRIPE_SECRET_KEY).toBe('specific');
+    expect(r.LICENSE_SIGNING_SECRET).toBe('s'.repeat(32));
+  });
+
+  it('falls back to the generic names', () => {
+    const r = resolveEnv({ STRIPE_SECRET_KEY: 'generic', LICENSE_SIGNING_SECRET: 'g'.repeat(32) });
+    expect(r.STRIPE_SECRET_KEY).toBe('generic');
   });
 });

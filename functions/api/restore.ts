@@ -3,7 +3,7 @@
 // proof only they have: the receipt number (from the Stripe receipt email, e.g. 1234-5678)
 // or the order reference shown on the success page (pi_... or cs_...).
 // The response never says whether an email exists, to avoid leaking who bought.
-import { isConfigured, type Env } from '../_lib/env';
+import { isConfigured, resolveEnv, type Env } from '../_lib/env';
 import { json, originAllowed, rateLimit, readJson, turnstileOk } from '../_lib/http';
 import { signLicense } from '../_lib/license';
 import { findPurchaseByEmail } from '../_lib/stripe';
@@ -15,7 +15,8 @@ interface Ctx {
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
 
-export async function onRequestPost({ request, env }: Ctx): Promise<Response> {
+export async function onRequestPost({ request, env: rawEnv }: Ctx): Promise<Response> {
+  const env = resolveEnv(rawEnv);
   if (!originAllowed(request, env)) return json({ ok: false, error: 'forbidden' }, 403);
   if (!(await rateLimit(request, env, 'restore', 5, 600))) return json({ ok: false, error: 'rate_limited' });
   if (!isConfigured(env)) return json({ ok: false, error: 'not_configured' });

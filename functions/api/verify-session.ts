@@ -2,7 +2,7 @@
 // Called by /payment-success after Stripe redirects back. Confirms with Stripe that the
 // Checkout Session is a paid, unrefunded purchase of the PromptGrade Payment Link, then
 // returns a signed license. The browser is never trusted to say it paid.
-import { isConfigured, type Env } from '../_lib/env';
+import { isConfigured, resolveEnv, type Env } from '../_lib/env';
 import { json, originAllowed, rateLimit, readJson } from '../_lib/http';
 import { signLicense } from '../_lib/license';
 import { verifySession } from '../_lib/stripe';
@@ -12,7 +12,8 @@ interface Ctx {
   env: Env;
 }
 
-export async function onRequestPost({ request, env }: Ctx): Promise<Response> {
+export async function onRequestPost({ request, env: rawEnv }: Ctx): Promise<Response> {
+  const env = resolveEnv(rawEnv);
   if (!originAllowed(request, env)) return json({ ok: false, error: 'forbidden' }, 403);
   if (!(await rateLimit(request, env, 'verify', 20, 600))) return json({ ok: false, error: 'rate_limited' });
   if (!isConfigured(env)) return json({ ok: false, error: 'not_configured' });
