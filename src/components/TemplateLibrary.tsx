@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, Zap, Search, SortAsc, LayoutGrid, SlidersHorizontal } from 'lucide-react';
 import { CATEGORIES, FREE_TEMPLATES, type PromptTemplate } from '@/lib/promptTemplates';
 import { toast } from '@/hooks/use-toast';
+import { scorePrompt } from '@/lib/promptAnalyzer';
 
 interface TemplateLibraryProps {
   onTryTemplate: (prompt: string) => void;
@@ -26,8 +27,14 @@ export default function TemplateLibrary({ onTryTemplate }: TemplateLibraryProps)
     });
   };
 
+  // Scores are measured with the same engine as the scanner, not hand-entered.
+  const scoredTemplates = useMemo(
+    () => FREE_TEMPLATES.map((t) => ({ ...t, score: scorePrompt(t.prompt).overallScore })),
+    [],
+  );
+
   // Filter templates
-  let filtered = FREE_TEMPLATES.filter(template => {
+  let filtered = scoredTemplates.filter(template => {
     const matchesCategory = activeCategory === 'all' || template.category === activeCategory;
     const matchesSearch = 
       template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -58,10 +65,10 @@ export default function TemplateLibrary({ onTryTemplate }: TemplateLibraryProps)
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/60 pb-4">
         <div>
           <h2 className="text-xl font-display font-bold text-foreground flex items-center gap-2">
-            📚 Expanded Template Library
+            📚 Template Library
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Discover {FREE_TEMPLATES.length} pre-scanned prompts optimized for maximum efficiency scores.
+            {FREE_TEMPLATES.length} free prompt templates, each scored with the PromptGrade checklist.
           </p>
         </div>
 
@@ -87,8 +94,8 @@ export default function TemplateLibrary({ onTryTemplate }: TemplateLibraryProps)
               onChange={(e) => setSortBy(e.target.value as SortOption)}
               className="bg-transparent border-none text-foreground focus:outline-none font-semibold cursor-pointer"
             >
-              <option value="score-desc" className="bg-card">PES™: High to Low</option>
-              <option value="score-asc" className="bg-card">PES™: Low to High</option>
+              <option value="score-desc" className="bg-card">Score: high to low</option>
+              <option value="score-asc" className="bg-card">Score: low to high</option>
               <option value="title-asc" className="bg-card">Title: A to Z</option>
               <option value="title-desc" className="bg-card">Title: Z to A</option>
             </select>
@@ -135,7 +142,7 @@ export default function TemplateLibrary({ onTryTemplate }: TemplateLibraryProps)
                     {template.categoryEmoji} {template.category}
                   </span>
                   <span className="text-[11px] font-mono text-primary font-bold bg-primary/5 px-2 py-0.5 rounded border border-primary/10">
-                    PES™ {template.score}
+                    Score {template.score}
                   </span>
                 </div>
 

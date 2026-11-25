@@ -1,14 +1,6 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Disallow: /api/
+
+Sitemap: https://promptgrade.efficientgptprompts.com/sitemap.xml
+Sitemap: https://efficientgptprompts.com/sitemap_index.xml

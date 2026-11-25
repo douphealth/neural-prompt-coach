@@ -226,7 +226,7 @@ export default function ShareableScoreCard({ result }: ShareableScoreCardProps) 
   const handleShare = async () => {
     const canvas = generateScoreCardCanvas(result);
 
-    const text = `My AI prompt scored ${result.overallScore}/100 (${result.grade}) on PromptGrade™!\n\n${result.verdict}\n\nAnalyze your prompts free → https://app.efficientgptprompts.com`;
+    const text = `My AI prompt scored ${result.overallScore}/100 (${result.grade}) on PromptGrade™!\n\n${result.verdict}\n\nScore your prompt free: https://promptgrade.efficientgptprompts.com/`;
 
     if (navigator.share && navigator.canShare) {
       try {

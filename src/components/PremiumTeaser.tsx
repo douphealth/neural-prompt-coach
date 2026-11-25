@@ -1,46 +1,40 @@
 import { motion } from 'framer-motion';
-import { Lock, Zap, BookOpen, GitBranch, Infinity, History } from 'lucide-react';
+import { Lock, Zap, BookOpen, GitBranch, BarChart3 } from 'lucide-react';
 import { usePremium } from '@/hooks/usePremium';
+import { FREE_DAILY_LIMIT, PREMIUM_PRICE_LABEL } from '@/lib/premium';
 
+// Only features that Premium actually unlocks in this app.
 const premiumFeatures = [
-  { icon: Zap, title: '5 Multi-Model Rewrites', desc: 'GPT-4o, Claude, Llama-optimized versions + Maximum Efficiency & Quality rewrites' },
-  { icon: BookOpen, title: '200+ Premium Templates', desc: 'Full vault across 20+ professional categories, all rated 90+ PES™' },
-  { icon: BookOpen, title: 'Prompt Engineering Masterclass', desc: '12 prompt patterns, model-specific secrets, and real-world case studies' },
-  { icon: GitBranch, title: 'Prompt Chains Builder', desc: 'Build multi-step prompt workflows for complex tasks' },
-  { icon: Infinity, title: 'Unlimited Analyses', desc: 'No daily cap. Analyze as many prompts as you want, forever.' },
-  { icon: History, title: 'Export & History', desc: 'Save, compare, and export all your analyses. Track your improvement.' },
+  { icon: Zap, title: 'Unlimited scans', desc: `No daily cap. The free plan includes ${FREE_DAILY_LIMIT} scans a day.` },
+  { icon: GitBranch, title: 'Prompt Chains builder', desc: 'Build multi-step prompt workflows, starting from 3 ready-made pipelines.' },
+  { icon: BookOpen, title: 'Prompt Engineering Masterclass', desc: '12 prompt patterns (chain of thought, few-shot, XML tags and more) with copyable examples.' },
+  { icon: BarChart3, title: 'Workspace Analytics', desc: 'Charts of your score history and the dimensions you most often miss.' },
 ];
 
-export default function PremiumTeaser() {
+export default function PremiumTeaser({ onRestore }: { onRestore: () => void }) {
   const { isPremium, isLoading, handleUpgrade } = usePremium();
 
   if (isPremium) return null;
 
   return (
-    <section className="py-20 relative overflow-hidden">
-      {/* Glow background */}
+    <section className="py-16 relative overflow-hidden" aria-labelledby="premium-teaser-title">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="relative text-center mb-12"
-      >
+      <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative text-center mb-10">
         <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-4">
-          <Lock className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-primary">Premium Zone</span>
+          <Lock className="w-4 h-4 text-primary" aria-hidden />
+          <span className="text-sm font-medium text-primary">PromptGrade Premium</span>
         </div>
-        <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
-          Unlock the Full Power of PromptGrade™
+        <h2 id="premium-teaser-title" className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
+          What Premium adds
         </h2>
         <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-          Advanced multi-model rewrites, the complete 200+ template vault, the masterclass playbook, and unlimited analyses.
-          <span className="text-primary font-bold"> One payment. Yours forever.</span>
+          Scoring, breakdowns, rewrites and the template library stay free. Premium adds the tools below.
+          <span className="text-primary font-bold"> {PREMIUM_PRICE_LABEL} once, no subscription.</span>
         </p>
       </motion.div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto mb-12">
+      <div className="grid sm:grid-cols-2 gap-5 max-w-4xl mx-auto mb-10">
         {premiumFeatures.map((f, i) => (
           <motion.div
             key={f.title}
@@ -48,27 +42,29 @@ export default function PremiumTeaser() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.08 }}
-            className="bg-gradient-card border border-border rounded-lg p-5 relative overflow-hidden group"
+            className="bg-gradient-card border border-border rounded-lg p-5"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <f.icon className="w-6 h-6 text-primary mb-3 relative z-10" />
-            <h4 className="font-display font-semibold text-foreground mb-1 relative z-10">{f.title}</h4>
-            <p className="text-sm text-muted-foreground relative z-10">{f.desc}</p>
+            <f.icon className="w-6 h-6 text-primary mb-3" aria-hidden />
+            <h3 className="font-display font-semibold text-foreground mb-1">{f.title}</h3>
+            <p className="text-sm text-muted-foreground">{f.desc}</p>
           </motion.div>
         ))}
       </div>
 
       <div className="text-center">
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.98 }}
+        <button
           onClick={handleUpgrade}
           disabled={isLoading}
           className="bg-primary text-primary-foreground font-display font-bold text-lg px-10 py-4 rounded-xl glow-primary-strong hover:opacity-90 transition-opacity disabled:opacity-50"
         >
-          {isLoading ? 'Loading...' : 'Unlock Premium — $7.99 Forever'}
-        </motion.button>
-        <p className="text-xs text-muted-foreground mt-3">One-time payment • No subscription • Instant access</p>
+          {isLoading ? 'Opening Stripe…' : `Unlock Premium — ${PREMIUM_PRICE_LABEL} Forever`}
+        </button>
+        <p className="text-xs text-muted-foreground mt-3">
+          One-time payment via Stripe · Works in this browser; restore on other devices with your receipt ·{' '}
+          <button onClick={onRestore} className="underline hover:text-foreground">
+            Restore purchase
+          </button>
+        </p>
       </div>
     </section>
   );
